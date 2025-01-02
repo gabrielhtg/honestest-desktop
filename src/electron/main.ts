@@ -15,7 +15,8 @@ app.on('ready', () => {
     minimizable: false,
     webPreferences: {
       preload: getPreloadPath()
-    }
+    },
+    kiosk: true
   });
 
   Menu.setApplicationMenu(null);

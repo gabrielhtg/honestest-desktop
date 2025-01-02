@@ -41,10 +41,17 @@ export function MainPage() {
 
     setOldNim(tempNim.data);
     setOldName(tempName.data);
+  };
 
-    console.log(tempName);
-    console.log(tempNim);
-    console.log(tempDeviceID);
+  const handleSaveUserData = async () => {
+    // @ts-ignore
+    await window.electron.store.save('user-nim', nim.toUpperCase());
+    // @ts-ignore
+    await window.electron.store.save('user-name', name.toUpperCase());
+    // @ts-ignore
+    await window.electron.store.save('device-id', deviceId);
+
+    getUserData().then();
   };
 
   const clearAppData = async () => {
@@ -70,6 +77,7 @@ export function MainPage() {
                 onChange={(e) => {
                   setNim(e.target.value);
                 }}
+                className={'uppercase'}
               />
             </div>
 
@@ -80,6 +88,7 @@ export function MainPage() {
                 onChange={(e) => {
                   setName(e.target.value);
                 }}
+                className={'uppercase'}
               />
             </div>
 
@@ -119,7 +128,10 @@ export function MainPage() {
 
             <div className={'flex flex-col gap-2'}>
               {oldName !== name || oldNim !== nim ? (
-                <Button>
+                <Button
+                  onClick={() => {
+                    handleSaveUserData().then();
+                  }}>
                   <Save />
                   Save
                 </Button>

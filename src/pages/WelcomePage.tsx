@@ -25,14 +25,16 @@ export function WelcomePage() {
   const [nim, setNim] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [deviceId, setDeviceId] = useState<string>('');
+  const [nimErrMsg, setNimErrMsg] = useState<string>('');
+  const [nameErrMsg, setNameErrMsg] = useState<string>('');
   const navigate = useNavigate();
 
   // function area
   const handleSaveUserData = async () => {
     // @ts-ignore
-    await window.electron.store.save('user-nim', nim);
+    await window.electron.store.save('user-nim', nim.toUpperCase());
     // @ts-ignore
-    await window.electron.store.save('user-name', name);
+    await window.electron.store.save('user-name', name.toUpperCase());
     // @ts-ignore
     await window.electron.store.save('device-id', deviceId);
   };
@@ -99,7 +101,9 @@ export function WelcomePage() {
                   onChange={(e) => {
                     setNim(e.target.value);
                   }}
+                  className={'uppercase'}
                 />
+                <span className={'text-red-500 text-sm'}>{nimErrMsg}</span>
               </div>
 
               <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -110,7 +114,9 @@ export function WelcomePage() {
                   onChange={(e) => {
                     setName(e.target.value);
                   }}
+                  className={'uppercase'}
                 />
+                <span className={'text-red-500 text-sm'}>{nameErrMsg}</span>
               </div>
             </div>
 
@@ -125,8 +131,20 @@ export function WelcomePage() {
 
               <Button
                 onClick={() => {
-                  handleSaveUserData().then();
-                  setPageState(pageState + 1);
+                  setNimErrMsg('');
+                  setNameErrMsg('');
+                  if (nim !== '' && name !== '') {
+                    handleSaveUserData().then();
+                    setPageState(pageState + 1);
+                  } else {
+                    if (nim === '') {
+                      setNimErrMsg('Please fill this field.');
+                    }
+
+                    if (name === '') {
+                      setNameErrMsg('Please fill this field.');
+                    }
+                  }
                 }}>
                 <ArrowRight />
                 Next
