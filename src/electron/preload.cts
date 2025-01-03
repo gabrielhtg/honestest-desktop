@@ -9,5 +9,7 @@ electron.contextBridge.exposeInMainWorld('electron', {
     delete: (dataName: string) => electron.ipcRenderer.invoke('store-delete', dataName),
     clear: () => electron.ipcRenderer.invoke('store-clear')
   },
+  open_config: (filePath: string, password: string) =>
+    electron.ipcRenderer.invoke('decrypt-exam', filePath, password),
   exit: () => electron.ipcRenderer.send('app-exit')
 });

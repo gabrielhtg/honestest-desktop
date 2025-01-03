@@ -4,22 +4,20 @@ import './index.css';
 import { createHashRouter, RouterProvider } from 'react-router';
 import { WelcomePage } from '@/pages/WelcomePage.tsx';
 import { MainPage } from '@/pages/MainPage.tsx';
+import { ExamStartPage } from '@/pages/ExamStart.tsx';
 
 const router = createHashRouter([
   {
     path: '/',
     element: <WelcomePage />
-    // children: [
-    //     {
-    //         path: "",
-    //         title: "Home",
-    //         element: <HomePage />,
-    //     },
-    // ],
   },
   {
     path: '/main',
     element: <MainPage />
+  },
+  {
+    path: '/exam',
+    element: <ExamStartPage />
   }
 ]);
 

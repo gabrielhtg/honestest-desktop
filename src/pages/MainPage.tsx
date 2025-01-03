@@ -12,11 +12,18 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog.tsx';
-import { Copy, Fingerprint, LogOut, RotateCcw, Save } from 'lucide-react';
+import { Copy, Fingerprint, LogOut, Menu, RotateCcw, Save } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label.tsx';
 import { useNavigate } from 'react-router';
+import { Toaster } from '@/components/ui/sonner.tsx';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu.tsx';
 
 export function MainPage() {
   const [examConfigFile, setExamConfigFile] = useState<File>();
@@ -26,6 +33,9 @@ export function MainPage() {
   const [oldNim, setOldNim] = useState<string>('');
   const [oldName, setOldName] = useState<string>('');
   const navigate = useNavigate();
+  const [openClearDialog, setOpenClearDialog] = useState<boolean>(false);
+  const [openExitDialog, setOpenExitDialog] = useState<boolean>(false);
+  const [configPassword, setConfigPassword] = useState<string>('');
 
   const getUserData = async () => {
     // @ts-ignore
@@ -41,6 +51,26 @@ export function MainPage() {
 
     setOldNim(tempNim.data);
     setOldName(tempName.data);
+  };
+
+  const toBase64 = (file: File) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+
+  const getExamData = async () => {
+    // @ts-ignore
+    const examData = await window.electron.open_config(
+      await toBase64(examConfigFile!),
+      '9ac50806-eb48-4daf-bd72-561ee1a7ba62'
+    );
+
+    if (examData.data !== null) {
+      navigate('/exam');
+    }
   };
 
   const handleSaveUserData = async () => {
@@ -144,20 +174,75 @@ export function MainPage() {
                 Get Credential File
               </Button>
 
-              {examConfigFile ? <Button>Start Exam</Button> : ''}
+              {examConfigFile ? (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>Open Exam Config</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Insert Config Password</DialogTitle>
+                      <DialogDescription>
+                        To get the config password, ask your lecturer or exam supervisor.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor="password">Config Password</Label>
+                      <Input
+                        id="password"
+                        value={configPassword}
+                        onChange={(e) => {
+                          setConfigPassword(e.target.value);
+                        }}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        type="submit"
+                        onClick={() => {
+                          getExamData().then();
+                        }}>
+                        Start
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                ''
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
 
       <div className={'flex justify-end w-full gap-3 mt-10'}>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className={'self-end'} variant={'destructive'}>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant={'outline'}>
+              <Menu />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className={'mr-10'}>
+            <DropdownMenuItem
+              className={'text-red-500'}
+              onClick={() => {
+                setOpenClearDialog(true);
+              }}>
               <RotateCcw />
               Clear App Data
-            </Button>
-          </DialogTrigger>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                setOpenExitDialog(true);
+              }}>
+              <LogOut />
+              Exit App
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Dialog open={openClearDialog} onOpenChange={setOpenClearDialog}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className={'text-center'}>Clear HonesTest Data</DialogTitle>
@@ -183,13 +268,7 @@ export function MainPage() {
           </DialogContent>
         </Dialog>
 
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className={'self-end'} variant={'outline'}>
-              <LogOut />
-              Exit App
-            </Button>
-          </DialogTrigger>
+        <Dialog open={openExitDialog} onOpenChange={setOpenExitDialog}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle className={'text-center'}>Exit Application</DialogTitle>
@@ -215,6 +294,8 @@ export function MainPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <Toaster />
     </div>
   );
 }
