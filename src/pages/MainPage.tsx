@@ -65,10 +65,12 @@ export function MainPage() {
     // @ts-ignore
     const examData = await window.electron.open_config(
       await toBase64(examConfigFile!),
-      '9ac50806-eb48-4daf-bd72-561ee1a7ba62'
+      configPassword
     );
 
     if (examData.data !== null) {
+      // @ts-ignore
+      await window.electron.start_exam_mode();
       navigate('/exam');
     }
   };
@@ -186,7 +188,7 @@ export function MainPage() {
                         To get the config password, ask your lecturer or exam supervisor.
                       </DialogDescription>
                     </DialogHeader>
-                    <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-col gap-3">
                       <Label htmlFor="password">Config Password</Label>
                       <Input
                         id="password"

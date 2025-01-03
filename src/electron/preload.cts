@@ -11,5 +11,7 @@ electron.contextBridge.exposeInMainWorld('electron', {
   },
   open_config: (filePath: string, password: string) =>
     electron.ipcRenderer.invoke('decrypt-exam', filePath, password),
-  exit: () => electron.ipcRenderer.send('app-exit')
+  exit: () => electron.ipcRenderer.send('app-exit'),
+  start_exam_mode: () => electron.ipcRenderer.invoke('start_exam_mode'),
+  stop_exam_mode: () => electron.ipcRenderer.invoke('stop_exam_mode')
 });
