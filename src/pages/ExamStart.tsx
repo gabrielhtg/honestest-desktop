@@ -28,7 +28,7 @@ export function ExamStartPage() {
   const [timeLimit, setTimeLimit] = useState('');
   const [inputStartPassword, setInputStartPassword] = useState('');
   const [inputStartPasswordValidation, setInputStartPasswordValidation] = useState('');
-  const [examResultData, setExamResultData] = useState<any[]>([]);
+  const [examResultData] = useState<any[]>([]);
 
   const getExamData = async () => {
     // @ts-ignore
