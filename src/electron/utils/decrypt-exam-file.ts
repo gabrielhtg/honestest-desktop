@@ -12,11 +12,18 @@ export function decryptExamFile() {
     const decipher = createDecipheriv('aes-256-ctr', key, iv);
     const decryptedText = Buffer.concat([decipher.update(temp), decipher.final()]);
 
-    store.set('exam-data', JSON.parse(decryptedText.toString()));
+    try {
+      store.set('exam-data', JSON.parse(decryptedText.toString()));
 
-    return {
-      message: 'success',
-      data: JSON.parse(decryptedText.toString())
-    };
+      return {
+        message: 'success',
+        data: JSON.parse(decryptedText.toString())
+      };
+    } catch (error: any) {
+      return {
+        message: 'Wrong Password',
+        data: null
+      };
+    }
   });
 }

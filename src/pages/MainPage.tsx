@@ -36,6 +36,7 @@ export function MainPage() {
   const [openClearDialog, setOpenClearDialog] = useState<boolean>(false);
   const [openExitDialog, setOpenExitDialog] = useState<boolean>(false);
   const [configPassword, setConfigPassword] = useState<string>('');
+  const [passwordErrMessage, setPasswordErrMessage] = useState('');
 
   const getUserData = async () => {
     // @ts-ignore
@@ -72,6 +73,8 @@ export function MainPage() {
       // @ts-ignore
       await window.electron.start_exam_mode();
       navigate('/exam');
+    } else {
+      setPasswordErrMessage(examData.message);
     }
   };
 
@@ -159,6 +162,48 @@ export function MainPage() {
             </div>
 
             <div className={'flex flex-col gap-2'}>
+              {examConfigFile ? (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>Open Exam Config</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                      <DialogTitle>Insert Config Password</DialogTitle>
+                      <DialogDescription>
+                        To get the config password, ask your lecturer or exam supervisor.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col">
+                      <Label htmlFor="password" className={'mb-3'}>
+                        Config Password
+                      </Label>
+                      <Input
+                        id="password"
+                        value={configPassword}
+                        onChange={(e) => {
+                          setConfigPassword(e.target.value);
+                        }}
+                        className="col-span-3"
+                      />
+                      <span className={'text-xs text-red-500 mt-1'}>{passwordErrMessage}</span>
+                    </div>
+                    <DialogFooter>
+                      <Button
+                        type="submit"
+                        onClick={() => {
+                          setPasswordErrMessage('');
+                          getExamData().then();
+                        }}>
+                        Start
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                ''
+              )}
+
               {oldName !== name || oldNim !== nim ? (
                 <Button
                   onClick={() => {
@@ -175,44 +220,6 @@ export function MainPage() {
                 <Fingerprint />
                 Get Credential File
               </Button>
-
-              {examConfigFile ? (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button>Open Exam Config</Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Insert Config Password</DialogTitle>
-                      <DialogDescription>
-                        To get the config password, ask your lecturer or exam supervisor.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-3">
-                      <Label htmlFor="password">Config Password</Label>
-                      <Input
-                        id="password"
-                        value={configPassword}
-                        onChange={(e) => {
-                          setConfigPassword(e.target.value);
-                        }}
-                        className="col-span-3"
-                      />
-                    </div>
-                    <DialogFooter>
-                      <Button
-                        type="submit"
-                        onClick={() => {
-                          getExamData().then();
-                        }}>
-                        Start
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              ) : (
-                ''
-              )}
             </div>
           </CardContent>
         </Card>

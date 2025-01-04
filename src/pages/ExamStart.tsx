@@ -21,7 +21,14 @@ import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router';
 import { Input } from '@/components/ui/input';
 import logo from '@/assets/app-logo.png';
-import { LogOut } from 'lucide-react';
+import {
+  BatteryCharging,
+  BatteryFull,
+  BatteryLow,
+  BatteryMedium,
+  BatteryWarning,
+  LogOut
+} from 'lucide-react';
 
 export function ExamStartPage() {
   const [examData, setExamData] = useState<any>();
@@ -32,6 +39,7 @@ export function ExamStartPage() {
   const [inputStartPasswordValidation, setInputStartPasswordValidation] = useState('');
   const [examResultData] = useState<any[]>([]);
   const navigate = useNavigate();
+  const [currentTime, setCurrentTime] = useState('');
 
   const getExamData = async () => {
     // @ts-ignore
@@ -66,6 +74,20 @@ export function ExamStartPage() {
 
   useEffect(() => {
     getExamData().then();
+
+    const updateTime = () => {
+      const now = new Date();
+      const options: any = {
+        month: 'short',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      };
+      setCurrentTime(now.toLocaleString('en-US', options));
+    };
+    const intervalId = setInterval(updateTime, 1000);
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
@@ -219,19 +241,30 @@ export function ExamStartPage() {
           {/*)}*/}
         </div>
       </div>
+
+      {/*Bagian bar bawah      */}
       <div
         className={
           'w-full bottom-0 sticky border-t bg-white flex py-2 px-5 shadow-lg justify-between items-center'
         }>
         <img src={logo} alt="logo" className={'w-8 h-8'} />
 
-        <Button
-          variant={'secondary'}
-          onClick={() => {
-            handleExitExam().then();
-          }}>
-          <LogOut />
-        </Button>
+        <div className={'flex gap-2 items-center'}>
+          <BatteryFull />
+          <BatteryCharging />
+          <BatteryLow />
+          <BatteryMedium />
+          <BatteryWarning />
+          <Button variant={'secondary'}>{currentTime}</Button>
+
+          <Button
+            variant={'secondary'}
+            onClick={() => {
+              handleExitExam().then();
+            }}>
+            <LogOut />
+          </Button>
+        </div>
       </div>
     </>
   );

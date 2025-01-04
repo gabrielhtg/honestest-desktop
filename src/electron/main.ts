@@ -18,7 +18,7 @@ app.on('ready', () => {
     }
   });
 
-  Menu.setApplicationMenu(null);
+  // Menu.setApplicationMenu(null);
   // mainWindow.maximize();
 
   if (isDev()) {
@@ -44,9 +44,11 @@ ipcMain.handle('start_exam_mode', async (event) => {
     mainWindow.setMinimizable(false);
   }
 
-  mainWindow.on('blur', () => {
-    mainWindow.focus();
-  });
+  if (!isDev()) {
+    mainWindow.on('blur', () => {
+      mainWindow.focus();
+    });
+  }
 
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (input.control && input.key.toLowerCase() === 'i') {
