@@ -92,7 +92,7 @@ export function ExamStartPage() {
 
   return (
     <>
-      <div className={'flex p-10 flex-col gap-5'}>
+      <div className={'flex p-10 flex-col gap-5 min-h-screen'}>
         <h1 className={'font-bold text-3xl'}>Course : {examData ? examData.course_title : ''}</h1>
 
         <hr />
