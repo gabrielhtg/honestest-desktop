@@ -1,13 +1,14 @@
-import { app, BrowserWindow, ipcMain, Menu, globalShortcut } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu } from 'electron';
 import path from 'node:path';
 import { isDev } from './utils/check-dev.js';
 import { getPreloadPath } from './utils/path-resolver.js';
 import { dataManagementHandlers } from './utils/data-management.js';
 import { decryptExamFile } from './utils/decrypt-exam-file.js';
+import { isVirtualMachine } from './utils/system-information.js';
 
 let mainWindow: BrowserWindow;
 
-app.on('ready', () => {
+app.on('ready', async () => {
   mainWindow = new BrowserWindow({
     width: 1920 * 0.8,
     height: 1080 * 0.8,
@@ -18,13 +19,18 @@ app.on('ready', () => {
     }
   });
 
-  // Menu.setApplicationMenu(null);
-  // mainWindow.maximize();
+  const runningInVM = await isVirtualMachine();
+
+  if (runningInVM) {
+    console.log('Virtual env detected');
+    // mainWindow.loadURL('https://id.wikipedia.org/wiki/HTTP_404');
+  }
 
   if (isDev()) {
-    mainWindow.loadURL('http://localhost:5173');
+    await mainWindow.loadURL('http://localhost:5173');
   } else {
-    mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
+    await mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
+    Menu.setApplicationMenu(null);
   }
 
   dataManagementHandlers();
@@ -37,18 +43,23 @@ ipcMain.on('app-exit', () => {
   app.quit();
 });
 
-ipcMain.handle('start_exam_mode', async (event) => {
+ipcMain.handle('start_exam_mode', async () => {
   if (mainWindow) {
     mainWindow.setKiosk(true);
     mainWindow.setFullScreen(true);
     mainWindow.setMinimizable(false);
   }
 
-  if (!isDev()) {
-    mainWindow.on('blur', () => {
-      mainWindow.focus();
-    });
-  }
+  // if (!isDev()) {
+  mainWindow.setAlwaysOnTop(true, 'screen-saver');
+  mainWindow.on('blur', () => {
+    mainWindow.focus();
+  });
+  mainWindow.on('close', (event) => {
+    event.preventDefault(); // Mencegah jendela tertutup
+    console.log('Alt+F4 atau close dicegah!');
+  });
+  // }
 
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (input.control && input.key.toLowerCase() === 'i') {
@@ -65,7 +76,7 @@ ipcMain.handle('start_exam_mode', async (event) => {
   };
 });
 
-ipcMain.handle('stop_exam_mode', async (event) => {
+ipcMain.handle('stop_exam_mode', async () => {
   if (mainWindow) {
     mainWindow.setKiosk(false);
     mainWindow.setFullScreen(false);
@@ -73,6 +84,7 @@ ipcMain.handle('stop_exam_mode', async (event) => {
   }
 
   mainWindow.removeAllListeners('blur');
+  mainWindow.removeAllListeners('close');
 
   mainWindow.webContents.removeAllListeners('before-input-event');
 
