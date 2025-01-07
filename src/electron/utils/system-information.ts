@@ -18,3 +18,21 @@ export async function isVirtualMachine() {
     return false;
   }
 }
+
+export async function getBatteryPercentage() {
+  try {
+    const batteryInfo = await si.battery();
+    return batteryInfo.percent;
+  } catch (e: any) {
+    return e;
+  }
+}
+
+export async function isCharging() {
+  try {
+    const batteryInfo = await si.battery();
+    return batteryInfo.isCharging;
+  } catch (e: any) {
+    return e;
+  }
+}

@@ -4,7 +4,8 @@ import './index.css';
 import { createHashRouter, RouterProvider } from 'react-router';
 import { WelcomePage } from '@/pages/WelcomePage.tsx';
 import { MainPage } from '@/pages/MainPage.tsx';
-import { ExamStartPage } from '@/pages/ExamStart.tsx';
+import { ExamWaitingPage } from '@/pages/ExamWaitingPage.tsx';
+import ExamStartPage from '@/pages/ExamStartPage.tsx';
 
 const router = createHashRouter([
   {
@@ -17,6 +18,10 @@ const router = createHashRouter([
   },
   {
     path: '/exam',
+    element: <ExamWaitingPage />
+  },
+  {
+    path: '/exam-start',
     element: <ExamStartPage />
   }
 ]);

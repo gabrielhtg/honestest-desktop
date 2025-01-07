@@ -4,7 +4,7 @@ import { isDev } from './utils/check-dev.js';
 import { getPreloadPath } from './utils/path-resolver.js';
 import { dataManagementHandlers } from './utils/data-management.js';
 import { decryptExamFile } from './utils/decrypt-exam-file.js';
-import { isVirtualMachine } from './utils/system-information.js';
+import { getBatteryPercentage, isCharging, isVirtualMachine } from './utils/system-information.js';
 
 let mainWindow: BrowserWindow;
 
@@ -50,16 +50,16 @@ ipcMain.handle('start_exam_mode', async () => {
     mainWindow.setMinimizable(false);
   }
 
-  // if (!isDev()) {
-  mainWindow.setAlwaysOnTop(true, 'screen-saver');
-  mainWindow.on('blur', () => {
-    mainWindow.focus();
-  });
-  mainWindow.on('close', (event) => {
-    event.preventDefault(); // Mencegah jendela tertutup
-    console.log('Alt+F4 atau close dicegah!');
-  });
-  // }
+  if (!isDev()) {
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.on('blur', () => {
+      mainWindow.focus();
+    });
+    mainWindow.on('close', (event) => {
+      event.preventDefault(); // Mencegah jendela tertutup
+      console.log('Alt+F4 atau close dicegah!');
+    });
+  }
 
   mainWindow.webContents.on('before-input-event', (event, input) => {
     if (input.control && input.key.toLowerCase() === 'i') {
@@ -91,5 +91,19 @@ ipcMain.handle('stop_exam_mode', async () => {
   return {
     message: 'Exam Mode Activated',
     data: true
+  };
+});
+
+ipcMain.handle('get_battery_percentage', async () => {
+  return {
+    message: 'success',
+    data: await getBatteryPercentage()
+  };
+});
+
+ipcMain.handle('is_charging', async () => {
+  return {
+    message: 'success',
+    data: await isCharging()
   };
 });

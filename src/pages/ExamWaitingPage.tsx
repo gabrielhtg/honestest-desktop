@@ -11,6 +11,7 @@ import {
 import { format } from 'date-fns';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -30,7 +31,7 @@ import {
   LogOut
 } from 'lucide-react';
 
-export function ExamStartPage() {
+export function ExamWaitingPage() {
   const [examData, setExamData] = useState<any>();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -40,6 +41,8 @@ export function ExamStartPage() {
   const [examResultData] = useState<any[]>([]);
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState('');
+  const [batteryPercentage, setBatteryPercentage] = useState();
+  const [isCharging, setIsCharging] = useState();
 
   const getExamData = async () => {
     // @ts-ignore
@@ -72,8 +75,19 @@ export function ExamStartPage() {
     navigate('/main');
   };
 
+  const handleGetBatteryInfo = async () => {
+    // @ts-ignore
+    const tempPercentage = await window.electron.get_battery_percentage();
+    // @ts-ignore
+    const tempIsCharging = await window.electron.is_charging();
+
+    setBatteryPercentage(tempPercentage.data);
+    setIsCharging(tempIsCharging.data);
+  };
+
   useEffect(() => {
     getExamData().then();
+    handleGetBatteryInfo().then();
 
     const updateTime = () => {
       const now = new Date();
@@ -86,8 +100,14 @@ export function ExamStartPage() {
       };
       setCurrentTime(now.toLocaleString('en-US', options));
     };
+
     const intervalId = setInterval(updateTime, 1000);
-    return () => clearInterval(intervalId);
+    const batteryInterval = setInterval(handleGetBatteryInfo, 1000 * 2);
+
+    return () => {
+      clearInterval(intervalId);
+      clearInterval(batteryInterval);
+    };
   }, []);
 
   return (
@@ -209,14 +229,18 @@ export function ExamStartPage() {
                       onClick={() => {
                         setInputStartPasswordValidation('');
                         if (examData.start_password === inputStartPassword) {
-                          // router.push(`/main/exam/simulate/start/${id}`);
+                          navigate('/exam-start');
                         } else {
-                          setInputStartPasswordValidation('Incorrect Start Password');
+                          setInputStartPasswordValidation(
+                            `Incorrect Start Password ${examData.start_password}`
+                          );
                         }
                       }}>
                       Start
                     </Button>
-                    <Button variant={'secondary'}>Cancel</Button>
+                    <DialogClose asChild>
+                      <Button variant={'secondary'}>Cancel</Button>
+                    </DialogClose>
                   </div>
                 </div>
               </DialogHeader>
@@ -242,7 +266,7 @@ export function ExamStartPage() {
         </div>
       </div>
 
-      {/*Bagian bar bawah      */}
+      {/*Bagian bar bawah*/}
       <div
         className={
           'w-full bottom-0 sticky border-t bg-white flex py-2 px-5 shadow-lg justify-between items-center'
@@ -250,11 +274,21 @@ export function ExamStartPage() {
         <img src={logo} alt="logo" className={'w-8 h-8'} />
 
         <div className={'flex gap-2 items-center'}>
-          <BatteryFull />
-          <BatteryCharging />
-          <BatteryLow />
-          <BatteryMedium />
-          <BatteryWarning />
+          {isCharging ? (
+            <Button variant={'secondary'}>
+              <BatteryCharging />
+              {batteryPercentage}%
+            </Button>
+          ) : (
+            <Button variant={'secondary'}>
+              {batteryPercentage! >= 80 ? <BatteryFull /> : ''}
+              {batteryPercentage! >= 50 && batteryPercentage! < 80 ? <BatteryMedium /> : ''}
+              {batteryPercentage! >= 15 && batteryPercentage! < 50 ? <BatteryLow /> : ''}
+              {batteryPercentage! < 15 ? <BatteryWarning /> : ''}
+              {batteryPercentage}%
+            </Button>
+          )}
+
           <Button variant={'secondary'}>{currentTime}</Button>
 
           <Button
