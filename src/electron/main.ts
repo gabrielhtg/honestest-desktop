@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, globalShortcut } from 'electron';
 import path from 'node:path';
 import { isDev } from './utils/check-dev.js';
 import { getPreloadPath } from './utils/path-resolver.js';
@@ -76,10 +76,24 @@ ipcMain.handle('start_exam_mode', async () => {
   };
 });
 
+app.on('browser-window-focus', function () {
+  globalShortcut.register('CommandOrControl+R', () => {
+    console.log('CommandOrControl+R is pressed: Shortcut Disabled');
+  });
+  globalShortcut.register('F5', () => {
+    console.log('F5 is pressed: Shortcut Disabled');
+  });
+});
+
+app.on('browser-window-blur', function () {
+  globalShortcut.unregister('CommandOrControl+R');
+  globalShortcut.unregister('F5');
+});
+
 ipcMain.handle('stop_exam_mode', async () => {
   if (mainWindow) {
     mainWindow.setKiosk(false);
-    mainWindow.setFullScreen(false);
+    mainWindow.setFullScreen(false); 
     mainWindow.setMinimizable(true);
   }
 

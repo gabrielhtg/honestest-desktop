@@ -18,6 +18,9 @@ import {
   BatteryLow,
   BatteryMedium,
   BatteryWarning,
+  ChevronLeft,
+  ChevronRight,
+  Eraser,
   LogOut,
   Send
 } from 'lucide-react';
@@ -196,7 +199,6 @@ export default function ExamStartPage() {
               className={
                 'flex flex-col w-full overflow-y-auto scroll-smooth border rounded-lg px-5 pb-5'
               }>
-              {/*{questions.map((e: any, questionIndex) => (*/}
               {selectedQuestion ? (
                 <div className={'flex gap-3 rounded-lg p-5 pb-0 mr-5'}>
                   <div>{selectedQuestion?.number + 1}.</div>
@@ -207,14 +209,44 @@ export default function ExamStartPage() {
                         {editorConfig ? (
                           ''
                         ) : (
-                          <ReactQuill
-                            theme="snow"
-                            className={'mt-3'}
-                            value={selectedAnswers[selectedQuestion?.question.id]}
-                            onChange={handleTextChange}
-                            modules={Editor.modules}
-                            formats={Editor.formats}
-                          />
+                          <>
+                            <ReactQuill
+                              theme="snow"
+                              className={'mt-3'}
+                              value={selectedAnswers[selectedQuestion?.question.id]}
+                              onChange={handleTextChange}
+                              modules={Editor.modules}
+                              formats={Editor.formats}
+                            />
+
+                            <div className={'flex gap-3 mt-5'}>
+                              <Button
+                                variant={'outline'}
+                                onClick={() => {
+                                  console.log(questions[selectedQuestion.number - 1]);
+                                  // if (questions[selectedQuestion.number - 1] !== null) {
+                                  //   setSelectedQuestion({
+                                  //     question: questions[selectedQuestion.number - 1],
+                                  //     number: selectedQuestion.number - 1
+                                  //   });
+                                  // }
+                                }}>
+                                <ChevronLeft /> Back
+                              </Button>
+                              <Button
+                                variant={'outline'}
+                                onClick={() => {
+                                  if (questions[selectedQuestion.number + 1] !== null) {
+                                    setSelectedQuestion({
+                                      question: questions[selectedQuestion.number + 1],
+                                      number: selectedQuestion.number + 1
+                                    });
+                                  }
+                                }}>
+                                <ChevronRight /> Next
+                              </Button>
+                            </div>
+                          </>
                         )}
                       </>
                     ) : (
@@ -310,11 +342,36 @@ export default function ExamStartPage() {
                           )
                         )}
 
-                        {selectedAnswers[selectedQuestion?.question.id] &&
-                        selectedQuestion?.question.type == 'multiple' ? (
-                          <div>
+                        <div className={'flex gap-3 mt-5'}>
+                          <Button
+                            variant={'outline'}
+                            onClick={() => {
+                              if (questions[selectedQuestion.number - 1] !== null) {
+                                setSelectedQuestion({
+                                  question: questions[selectedQuestion.number - 1],
+                                  number: selectedQuestion.number - 1
+                                });
+                              }
+                            }}>
+                            <ChevronLeft /> Back
+                          </Button>
+                          <Button
+                            variant={'outline'}
+                            onClick={() => {
+                              if (questions[selectedQuestion.number + 1] !== null) {
+                                setSelectedQuestion({
+                                  question: questions[selectedQuestion.number + 1],
+                                  number: selectedQuestion.number + 1
+                                });
+                              }
+                            }}>
+                            <ChevronRight /> Next
+                          </Button>
+
+                          {selectedAnswers[selectedQuestion?.question.id] &&
+                          selectedQuestion?.question.type == 'multiple' ? (
                             <Button
-                              variant={'secondary'}
+                              variant={'outline'}
                               onClick={() => {
                                 setSelectedAnswers((prev) => {
                                   const updatedAnswers = { ...prev };
@@ -322,12 +379,12 @@ export default function ExamStartPage() {
                                   return updatedAnswers;
                                 });
                               }}>
-                              Clear Option
+                              <Eraser /> Clear Option
                             </Button>
-                          </div>
-                        ) : (
-                          ''
-                        )}
+                          ) : (
+                            ''
+                          )}
+                        </div>
                       </RadioGroup>
                     )}
                   </div>
@@ -335,7 +392,6 @@ export default function ExamStartPage() {
               ) : (
                 ''
               )}
-              {/*))}*/}
             </div>
           ) : (
             ''
