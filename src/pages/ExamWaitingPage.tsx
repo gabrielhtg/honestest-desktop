@@ -38,18 +38,24 @@ export function ExamWaitingPage() {
   const [timeLimit, setTimeLimit] = useState('');
   const [inputStartPassword, setInputStartPassword] = useState('');
   const [inputStartPasswordValidation, setInputStartPasswordValidation] = useState('');
-  const [examResultData] = useState<any[]>([]);
+  const [examResultData, setExamResultData] = useState<any[]>([]);
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState('');
   const [batteryPercentage, setBatteryPercentage] = useState();
   const [isCharging, setIsCharging] = useState();
+  const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [exitPassword, setExitPassword] = useState('');
+  const [exitPasswordErrMsg, setExitPasswordErrMsg] = useState('');
 
   const getExamData = async () => {
     // @ts-ignore
     const tempExamData = await window.electron.store.get('exam-data');
     setExamData(tempExamData.data.examData);
 
-    console.log(tempExamData);
+    // @ts-ignore
+    const tempResultData = await window.electron.store.get('exam-result');
+    console.log(tempResultData);
+    setExamResultData(tempResultData.data);
 
     setStartDate(
       format(new Date(tempExamData.data.examData.start_date), 'EEEE, dd MMMM yyyy, hh:mm a')
@@ -246,23 +252,6 @@ export function ExamWaitingPage() {
               </DialogHeader>
             </DialogContent>
           </Dialog>
-
-          {/*{examResultData?.length >= examData?.allowed_attempts ? (*/}
-          {/*  ''*/}
-          {/*) : (*/}
-          {/*  */}
-          {/*)}*/}
-
-          {/*{examResultData.length > 0 ? (*/}
-          {/*  <Button*/}
-          {/*    onClick={() => {*/}
-          {/*      handleResetAttempt().then();*/}
-          {/*    }}>*/}
-          {/*    Reset Attempts*/}
-          {/*  </Button>*/}
-          {/*) : (*/}
-          {/*  ''*/}
-          {/*)}*/}
         </div>
       </div>
 
@@ -294,12 +283,52 @@ export function ExamWaitingPage() {
           <Button
             variant={'secondary'}
             onClick={() => {
-              handleExitExam().then();
+              setExitPasswordErrMsg('');
+              if (examData.end_password === null) {
+                handleExitExam().then();
+              } else {
+                setShowDialog(true);
+              }
             }}>
             <LogOut />
           </Button>
         </div>
       </div>
+
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Insert Exit Password</DialogTitle>
+            <DialogDescription className={'pt-3'}>
+              Exit password is required to exit HonesTest.
+            </DialogDescription>
+            <div className={'pt-2'}>
+              <Input
+                type={'password'}
+                value={exitPassword}
+                onChange={(e) => {
+                  setExitPassword(e.target.value);
+                }}
+              />
+              <span className={'text-sm text-red-500'}>{exitPasswordErrMsg}</span>
+
+              <div className={'mt-3'}>
+                <Button
+                  onClick={() => {
+                    setExitPasswordErrMsg('');
+                    if (examData.end_password === exitPassword) {
+                      handleExitExam().then();
+                    } else {
+                      setExitPasswordErrMsg('Wrong exit password!');
+                    }
+                  }}>
+                  Exit
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

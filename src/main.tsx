@@ -6,6 +6,7 @@ import { WelcomePage } from '@/pages/WelcomePage.tsx';
 import { MainPage } from '@/pages/MainPage.tsx';
 import { ExamWaitingPage } from '@/pages/ExamWaitingPage.tsx';
 import ExamStartPage from '@/pages/ExamStartPage.tsx';
+import ExamReviewPage from '@/pages/ExamReviewPage.tsx';
 
 const router = createHashRouter([
   {
@@ -23,6 +24,10 @@ const router = createHashRouter([
   {
     path: '/exam-start',
     element: <ExamStartPage />
+  },
+  {
+    path: '/exam-review',
+    element: <ExamReviewPage />
   }
 ]);
 

@@ -5,6 +5,7 @@ import { getPreloadPath } from './utils/path-resolver.js';
 import { dataManagementHandlers } from './utils/data-management.js';
 import { decryptExamFile } from './utils/decrypt-exam-file.js';
 import { getBatteryPercentage, isCharging, isVirtualMachine } from './utils/system-information.js';
+import { generateCredentialFile } from './utils/generate-credential-file.js';
 
 let mainWindow: BrowserWindow;
 
@@ -30,12 +31,22 @@ app.on('ready', async () => {
     await mainWindow.loadURL('http://localhost:5173');
   } else {
     await mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
-    Menu.setApplicationMenu(null);
+    // Menu.setApplicationMenu(null);
   }
+
+  mainWindow.webContents.on('will-navigate', (event) => {
+    event.preventDefault();
+  });
+
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown' && input.key === 'BrowserBack') {
+      event.preventDefault();
+    }
+  });
 
   dataManagementHandlers();
   decryptExamFile();
-
+  generateCredentialFile();
   // pollResources();
 });
 
@@ -45,7 +56,7 @@ ipcMain.on('app-exit', () => {
 
 ipcMain.handle('start_exam_mode', async () => {
   if (mainWindow) {
-    mainWindow.setKiosk(true);
+    // mainWindow.setKiosk(true);
     mainWindow.setFullScreen(true);
     mainWindow.setMinimizable(false);
   }
@@ -61,14 +72,15 @@ ipcMain.handle('start_exam_mode', async () => {
     });
   }
 
-  mainWindow.webContents.on('before-input-event', (event, input) => {
-    if (input.control && input.key.toLowerCase() === 'i') {
-      event.preventDefault(); // Memblokir Ctrl+I (Developer Tools)
-    }
-    if (input.key === 'Tab' && input.alt) {
-      event.preventDefault(); // Memblokir Alt+Tab
-    }
-  });
+  // matikan ini jika sedang development
+  // mainWindow.webContents.on('before-input-event', (event, input) => {
+  //   if (input.control && input.key.toLowerCase() === 'i') {
+  //     event.preventDefault(); // Memblokir Ctrl+I (Developer Tools)
+  //   }
+  //   if (input.key === 'Tab' && input.alt) {
+  //     event.preventDefault(); // Memblokir Alt+Tab
+  //   }
+  // });
 
   return {
     message: 'Exam Mode Activated',
@@ -93,7 +105,7 @@ app.on('browser-window-blur', function () {
 ipcMain.handle('stop_exam_mode', async () => {
   if (mainWindow) {
     mainWindow.setKiosk(false);
-    mainWindow.setFullScreen(false); 
+    mainWindow.setFullScreen(false);
     mainWindow.setMinimizable(true);
   }
 

@@ -78,6 +78,19 @@ export function MainPage() {
     }
   };
 
+  const handleGenerateCredentialFile = async () => {
+    // @ts-ignore
+    const response = await window.electron.generate_credential_file(
+      JSON.stringify({
+        nim: nim,
+        name: name,
+        device_id: deviceId
+      })
+    );
+
+    console.log(response);
+  };
+
   const handleSaveUserData = async () => {
     // @ts-ignore
     await window.electron.store.save('user-nim', nim.toUpperCase());
@@ -152,6 +165,7 @@ export function MainPage() {
               <Label>Exam Config</Label>
               <Input
                 type="file"
+                accept=".ta12"
                 className={'max-w-sm'}
                 onChange={(e) => {
                   if (e.target.files !== null) {
@@ -180,6 +194,7 @@ export function MainPage() {
                       </Label>
                       <Input
                         id="password"
+                        type={'password'}
                         value={configPassword}
                         onChange={(e) => {
                           setConfigPassword(e.target.value);
@@ -216,7 +231,10 @@ export function MainPage() {
                 ''
               )}
 
-              <Button>
+              <Button
+                onClick={() => {
+                  handleGenerateCredentialFile().then();
+                }}>
                 <Fingerprint />
                 Get Credential File
               </Button>

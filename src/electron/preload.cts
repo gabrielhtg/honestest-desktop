@@ -15,5 +15,7 @@ electron.contextBridge.exposeInMainWorld('electron', {
   start_exam_mode: () => electron.ipcRenderer.invoke('start_exam_mode'),
   stop_exam_mode: () => electron.ipcRenderer.invoke('stop_exam_mode'),
   get_battery_percentage: () => electron.ipcRenderer.invoke('get_battery_percentage'),
-  is_charging: () => electron.ipcRenderer.invoke('is_charging')
+  is_charging: () => electron.ipcRenderer.invoke('is_charging'),
+  generate_credential_file: (data: string) =>
+    electron.ipcRenderer.invoke('generate-credential-file', data)
 });

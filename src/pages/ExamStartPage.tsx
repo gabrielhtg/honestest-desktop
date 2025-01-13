@@ -12,34 +12,21 @@ import {
   TableRow
 } from '@/components/ui/table.tsx';
 import CountdownTimer from '@/components/custom/CountDown.tsx';
-import {
-  BatteryCharging,
-  BatteryFull,
-  BatteryLow,
-  BatteryMedium,
-  BatteryWarning,
-  ChevronLeft,
-  ChevronRight,
-  Eraser,
-  LogOut,
-  Send
-} from 'lucide-react';
-import logo from '@/assets/app-logo.png';
+import { ChevronLeft, ChevronRight, Eraser, Send } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import QuillResizeImage from 'quill-resize-image';
+import { BottomBar } from '@/components/custom/BottomBar.tsx';
 Quill.register('modules/resize', QuillResizeImage);
 
 export default function ExamStartPage() {
   const [examData, setExamData] = useState<any>(null);
-  // const [editorConfig, setEditorConfig] = useState<any>(null);
+  const [quillValue, setQuillValue] = useState('');
   const [editorConfig] = useState<any>(null);
   const [submitState, setSubmitState] = useState(1);
   const [selectedQuestion, setSelectedQuestion] = useState<any>();
-  const [batteryPercentage, setBatteryPercentage] = useState();
-  const [isCharging, setIsCharging] = useState();
-  const [currentTime, setCurrentTime] = useState('');
+
   const navigate = useNavigate();
 
   // state untuk exam behaviour
@@ -94,17 +81,9 @@ export default function ExamStartPage() {
     }));
   };
 
-  const handleExitExam = async () => {
-    // @ts-ignore
-    await window.electron.stop_exam_mode();
-
-    navigate('/main');
-  };
-
   const getExamData = async () => {
     // @ts-ignore
     const tempExamData = await window.electron.store.get('exam-data');
-    console.log(tempExamData);
     setExamData(tempExamData.data.examData);
     setQuestions(tempExamData.data.questionsData);
     setSelectedQuestion({
@@ -117,72 +96,14 @@ export default function ExamStartPage() {
     setSecondsLimit(Math.floor((tempExamData.data.examData.time_limit % 3600) % 60));
   };
 
-  const handleGetBatteryInfo = async () => {
-    // @ts-ignore
-    const tempPercentage = await window.electron.get_battery_percentage();
-    // @ts-ignore
-    const tempIsCharging = await window.electron.is_charging();
-
-    setBatteryPercentage(tempPercentage.data);
-    setIsCharging(tempIsCharging.data);
-  };
-
   const handleSubmitExam = async () => {
-    // try {
-    //   const submitData = await axios.post(
-    //     `${apiUrl}/exam/submit`,
-    //     {
-    //       username: userUsername,
-    //       exam: examData,
-    //       answer: selectedAnswers,
-    //       questions: questions
-    //     },
-    //     getBearerHeader(localStorage.getItem('token')!)
-    //   );
-    //
-    //   if (examData.enable_review) {
-    //     if (submitData.status === 200) {
-    //       router.push(`/main/exam/simulate/review/${submitData.data.data.id}`);
-    //     }
-    //   } else {
-    //     if (submitData.status === 200) {
-    //       router.push(`/main/exam/simulate/${id}`);
-    //     }
-    //   }
-    // } catch (e: any) {
-    //   console.log(e.response.data.message);
-    // }
-  };
-
-  const handleTextChange = (quillVal: any) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [selectedQuestion?.question.id]: quillVal === '' || quillVal === '<p><br></p>' ? '' : quillVal
-    }));
+    // @ts-ignore
+    await window.electron.store.save('answers', selectedAnswers);
+    navigate('/exam-review');
   };
 
   useEffect(() => {
     getExamData().then();
-
-    const updateTime = () => {
-      const now = new Date();
-      const options: any = {
-        month: 'short',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      };
-      setCurrentTime(now.toLocaleString('en-US', options));
-    };
-
-    const intervalId = setInterval(updateTime, 1000);
-    const batteryInterval = setInterval(handleGetBatteryInfo, 1000 * 2);
-
-    return () => {
-      clearInterval(intervalId);
-      clearInterval(batteryInterval);
-    };
   }, []);
 
   return (
@@ -213,8 +134,8 @@ export default function ExamStartPage() {
                             <ReactQuill
                               theme="snow"
                               className={'mt-3'}
-                              value={selectedAnswers[selectedQuestion?.question.id]}
-                              onChange={handleTextChange}
+                              value={quillValue}
+                              onChange={setQuillValue}
                               modules={Editor.modules}
                               formats={Editor.formats}
                             />
@@ -223,24 +144,63 @@ export default function ExamStartPage() {
                               <Button
                                 variant={'outline'}
                                 onClick={() => {
-                                  console.log(questions[selectedQuestion.number - 1]);
-                                  // if (questions[selectedQuestion.number - 1] !== null) {
-                                  //   setSelectedQuestion({
-                                  //     question: questions[selectedQuestion.number - 1],
-                                  //     number: selectedQuestion.number - 1
-                                  //   });
-                                  // }
+                                  if (quillValue !== '' && quillValue !== '<p><br></p>') {
+                                    setSelectedAnswers((prev) => ({
+                                      ...prev,
+                                      [selectedQuestion?.question.id]: quillValue
+                                    }));
+                                  }
+
+                                  setQuillValue('');
+
+                                  if (
+                                    questions[selectedQuestion.number - 1] !== null &&
+                                    questions[selectedQuestion.number - 1] !== undefined
+                                  ) {
+                                    setQuillValue('');
+                                    setSelectedQuestion({
+                                      question: questions[selectedQuestion.number - 1],
+                                      number: selectedQuestion.number - 1
+                                    });
+
+                                    if (questions[selectedQuestion.number - 1].type == 'essay') {
+                                      setQuillValue(
+                                        selectedAnswers[questions[selectedQuestion.number - 1].id]
+                                      );
+                                    }
+                                  }
                                 }}>
                                 <ChevronLeft /> Back
                               </Button>
                               <Button
                                 variant={'outline'}
                                 onClick={() => {
-                                  if (questions[selectedQuestion.number + 1] !== null) {
+                                  if (quillValue !== '' && quillValue !== '<p><br></p>') {
+                                    setSelectedAnswers((prev) => ({
+                                      ...prev,
+                                      [selectedQuestion?.question.id]: quillValue
+                                    }));
+                                  }
+
+                                  setQuillValue('');
+
+                                  if (
+                                    questions[selectedQuestion.number + 1] !== null &&
+                                    questions[selectedQuestion.number + 1] !== undefined
+                                  ) {
                                     setSelectedQuestion({
                                       question: questions[selectedQuestion.number + 1],
                                       number: selectedQuestion.number + 1
                                     });
+
+                                    if (questions[selectedQuestion.number + 1].type == 'essay') {
+                                      setQuillValue('');
+                                      setQuillValue(
+                                        selectedAnswers[questions[selectedQuestion.number + 1].id]
+                                      );
+                                    }
+                                  } else {
+                                    setSubmitState(2);
                                   }
                                 }}>
                                 <ChevronRight /> Next
@@ -346,11 +306,22 @@ export default function ExamStartPage() {
                           <Button
                             variant={'outline'}
                             onClick={() => {
-                              if (questions[selectedQuestion.number - 1] !== null) {
+                              setQuillValue('');
+                              if (
+                                questions[selectedQuestion.number - 1] !== null &&
+                                questions[selectedQuestion.number - 1] !== undefined
+                              ) {
                                 setSelectedQuestion({
                                   question: questions[selectedQuestion.number - 1],
                                   number: selectedQuestion.number - 1
                                 });
+
+                                if (questions[selectedQuestion.number - 1].type == 'essay') {
+                                  setQuillValue('');
+                                  setQuillValue(
+                                    selectedAnswers[questions[selectedQuestion.number + 1].id]
+                                  );
+                                }
                               }
                             }}>
                             <ChevronLeft /> Back
@@ -358,11 +329,24 @@ export default function ExamStartPage() {
                           <Button
                             variant={'outline'}
                             onClick={() => {
-                              if (questions[selectedQuestion.number + 1] !== null) {
+                              setQuillValue('');
+                              if (
+                                questions[selectedQuestion.number + 1] !== null &&
+                                questions[selectedQuestion.number + 1] !== undefined
+                              ) {
                                 setSelectedQuestion({
                                   question: questions[selectedQuestion.number + 1],
                                   number: selectedQuestion.number + 1
                                 });
+
+                                if (questions[selectedQuestion.number + 1].type == 'essay') {
+                                  setQuillValue('');
+                                  setQuillValue(
+                                    selectedAnswers[questions[selectedQuestion.number + 1].id]
+                                  );
+                                }
+                              } else {
+                                setSubmitState(2);
                               }
                             }}>
                             <ChevronRight /> Next
@@ -452,10 +436,21 @@ export default function ExamStartPage() {
                         question: questions[index],
                         number: index
                       });
+
+                      if (questions[index].type == 'essay') {
+                        setQuillValue('');
+                        setQuillValue(selectedAnswers[questions[index].id]);
+                      }
                     }}
                     key={index}
                     className={'border rounded-lg flex justify-center flex-col items-center'}>
-                    <span className={'my-2'}>{index + 1}</span>
+                    <span
+                      className={
+                        'my-2 ' +
+                        (selectedQuestion.number === index ? 'underline underline-offset-2' : '')
+                      }>
+                      {index + 1}
+                    </span>
                     <div
                       className={`w-full h-6 rounded-b-lg ${selectedAnswers[e.id] ? 'bg-muted-foreground' : 'bg-muted'}`}></div>
                   </button>
@@ -481,6 +476,13 @@ export default function ExamStartPage() {
                     if (submitState === 2) {
                       handleSubmitExam().then();
                     } else {
+                      if (quillValue !== '' && quillValue !== '<p><br></p>') {
+                        setSelectedAnswers((prev) => ({
+                          ...prev,
+                          [selectedQuestion?.question.id]: quillValue
+                        }));
+                      }
+
                       setSubmitState(submitState + 1);
                     }
                   }}>
@@ -493,6 +495,8 @@ export default function ExamStartPage() {
           </div>
         </div>
       </div>
+
+      <BottomBar />
 
       {/*<AlertDialog open={showDialog}>*/}
       {/*  <AlertDialogContent>*/}
@@ -517,40 +521,6 @@ export default function ExamStartPage() {
       {/*    </AlertDialogFooter>*/}
       {/*  </AlertDialogContent>*/}
       {/*</AlertDialog>*/}
-
-      <div
-        className={
-          'w-full bottom-0 sticky border-t bg-white flex py-2 px-5 shadow-lg justify-between items-center'
-        }>
-        <img src={logo} alt="logo" className={'w-8 h-8'} />
-
-        <div className={'flex gap-2 items-center'}>
-          {isCharging ? (
-            <Button variant={'secondary'}>
-              <BatteryCharging />
-              {batteryPercentage}%
-            </Button>
-          ) : (
-            <Button variant={'secondary'}>
-              {batteryPercentage! >= 80 ? <BatteryFull /> : ''}
-              {batteryPercentage! >= 50 && batteryPercentage! < 80 ? <BatteryMedium /> : ''}
-              {batteryPercentage! >= 15 && batteryPercentage! < 50 ? <BatteryLow /> : ''}
-              {batteryPercentage! < 15 ? <BatteryWarning /> : ''}
-              {batteryPercentage}%
-            </Button>
-          )}
-
-          <Button variant={'secondary'}>{currentTime}</Button>
-
-          <Button
-            variant={'secondary'}
-            onClick={() => {
-              handleExitExam().then();
-            }}>
-            <LogOut />
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }
