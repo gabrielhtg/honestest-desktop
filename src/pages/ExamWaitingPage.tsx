@@ -156,7 +156,7 @@ export function ExamWaitingPage() {
           </div>
         </div>
 
-        {examResultData.length > 0 ? (
+        {examResultData?.length > 0 ? (
           <>
             <hr />
 
@@ -210,7 +210,7 @@ export function ExamWaitingPage() {
         <div className={'flex justify-center gap-3'}>
           <Dialog>
             <DialogTrigger asChild>
-              <Button>{examResultData.length > 0 ? 'Start Again' : 'Start Exam'}</Button>
+              <Button>{examResultData?.length > 0 ? 'Start Again' : 'Start Exam'}</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>

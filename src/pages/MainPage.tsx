@@ -64,15 +64,26 @@ export function MainPage() {
 
   const getExamData = async () => {
     // @ts-ignore
-    const examData = await window.electron.open_config(
+    const examData: any = await window.electron.open_config(
       await toBase64(examConfigFile!),
       configPassword
     );
+    const allowedUser: any = examData.data.allowedUserData;
 
-    if (examData.data !== null) {
-      // @ts-ignore
-      await window.electron.start_exam_mode();
-      navigate('/exam');
+    if (examData && allowedUser) {
+      const exists = allowedUser.some(
+        (item: any) => item.nim === nim && item.name === name && item.device_id === deviceId
+      );
+
+      if (exists) {
+        // @ts-ignore
+        await window.electron.start_exam_mode();
+        navigate('/exam');
+      } else {
+        setPasswordErrMessage(
+          'You are not permitted to take this exam. You have not yet enrolled in this course.'
+        );
+      }
     } else {
       setPasswordErrMessage(examData.message);
     }
