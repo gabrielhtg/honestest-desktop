@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron';
+import { app, ipcMain, shell } from 'electron';
 import path from 'node:path';
 import * as fs from 'node:fs';
 
@@ -8,6 +8,8 @@ export function generateCredentialFile() {
     const dataObj = JSON.parse(data);
     const filePath = path.join(documentsPath, `${dataObj.nim}_${dataObj.name}.ta12c`);
     fs.writeFileSync(filePath, data);
+
+    shell.showItemInFolder(filePath);
 
     return {
       message: 'success',

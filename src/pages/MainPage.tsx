@@ -88,7 +88,9 @@ export function MainPage() {
       })
     );
 
-    console.log(response);
+    toast.info(`Credential file saved at ${response.data}`, {
+      duration: 5000
+    });
   };
 
   const handleSaveUserData = async () => {
