@@ -68,17 +68,25 @@ export function MainPage() {
       await toBase64(examConfigFile!),
       configPassword
     );
-    const allowedUser: any = examData.data.allowedUserData;
 
-    if (examData && allowedUser) {
+    if (examData) {
+      const allowedUser: any = examData.data.allowedUserData;
+
       const exists = allowedUser.some(
         (item: any) => item.nim === nim && item.name === name && item.device_id === deviceId
       );
 
       if (exists) {
-        // @ts-ignore
-        await window.electron.start_exam_mode();
-        navigate('/exam');
+        const currentDate: number = new Date().getTime();
+        if (currentDate < new Date(examData.data.examData.start_date).getTime()) {
+          setPasswordErrMessage('Exams still cannot start at this time.');
+        } else if (currentDate > new Date(examData.data.examData.end_date).getTime()) {
+          setPasswordErrMessage('The exam is over. This config can no longer be used.');
+        } else {
+          // @ts-ignore
+          await window.electron.start_exam_mode();
+          navigate('/exam');
+        }
       } else {
         setPasswordErrMessage(
           'You are not permitted to take this exam. You have not yet enrolled in this course.'

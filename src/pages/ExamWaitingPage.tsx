@@ -54,7 +54,6 @@ export function ExamWaitingPage() {
 
     // @ts-ignore
     const tempResultData = await window.electron.store.get('exam-result');
-    console.log(tempResultData);
     setExamResultData(tempResultData.data);
 
     setStartDate(
@@ -70,8 +69,6 @@ export function ExamWaitingPage() {
     setTimeLimit(
       `${tempTimeLimitHours} hours, ${tempTimeLimitMinutes} minutes, ${tempTimeLimitSeconds} seconds`
     );
-
-    // setExamResultData(examResultResponse.data.data)
   };
 
   const handleExitExam = async () => {
@@ -119,7 +116,8 @@ export function ExamWaitingPage() {
   return (
     <>
       <div className={'flex p-10 flex-col gap-5 min-h-screen'}>
-        <h1 className={'font-bold text-3xl'}>Course : {examData ? examData.course_title : ''}</h1>
+        <h1 className={'font-bold text-3xl'}>Course : {examData ? examData.course.title : ''}</h1>
+        <p className={'text-muted-foreground'}>{examData ? examData.course.description : ''}</p>
 
         <hr />
 
@@ -175,7 +173,7 @@ export function ExamWaitingPage() {
                 <TableBody>
                   {examResultData?.map((examResult, index: number) => (
                     <TableRow key={index} className={'divide-x'}>
-                      <TableCell>{examResult.attempt}</TableCell>
+                      <TableCell>{index + 1}</TableCell>
                       <TableCell>
                         {format(new Date(examResult.created_at), 'EEEE, dd MMMM yyyy, hh:mm a')}
                       </TableCell>
@@ -188,9 +186,7 @@ export function ExamWaitingPage() {
                       </TableCell>
                       <TableCell>
                         {examData.enable_review ? (
-                          <Link
-                            to={`/main/exam/simulate/review/${examResult.id}`}
-                            className={'text-blue-500'}>
+                          <Link to={`/exam-review`} className={'text-blue-500'}>
                             Review
                           </Link>
                         ) : (

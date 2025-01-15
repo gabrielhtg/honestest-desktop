@@ -177,8 +177,10 @@ export default function ExamReviewPage() {
                   )}
 
                   <div className={'mt-2 text-muted-foreground'}>
-                    Point : {correctQuestions[question.id] ? correctQuestions[question.id] : '0'} of{' '}
-                    {question.point}
+                    {`Point : ${correctQuestions[question.id] ? correctQuestions[question.id] : '0'} of ${question.point}. `}
+                    <span className={'font-semibold'}>
+                      {question.type === 'essay' ? '(Not yet assessed by lecturer.)' : ''}
+                    </span>
                   </div>
                 </div>
               </div>

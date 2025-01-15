@@ -6,6 +6,8 @@ import { dataManagementHandlers } from './utils/data-management.js';
 import { decryptExamFile } from './utils/decrypt-exam-file.js';
 import { getBatteryPercentage, isCharging, isVirtualMachine } from './utils/system-information.js';
 import { generateCredentialFile } from './utils/generate-credential-file.js';
+import { killLinuxApp } from './utils/kill-app-linux.js';
+import { killWindowsApp } from './utils/kill-app-windows.js';
 
 let mainWindow: BrowserWindow;
 
@@ -60,6 +62,11 @@ ipcMain.handle('start_exam_mode', async () => {
     mainWindow.setFullScreen(true);
     mainWindow.setMinimizable(false);
   }
+
+  killLinuxApp('telegram');
+  killLinuxApp('Discord');
+  killWindowsApp('Telegram.exe');
+  killWindowsApp('Discord.exe');
 
   if (!isDev()) {
     mainWindow.setAlwaysOnTop(true, 'screen-saver');

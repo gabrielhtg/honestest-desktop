@@ -99,7 +99,12 @@ export default function ExamStartPage() {
   const handleSubmitExam = async () => {
     // @ts-ignore
     await window.electron.store.save('answers', selectedAnswers);
-    navigate('/exam-review');
+
+    if (examData.enable_review) {
+      navigate('/exam-review');
+    } else {
+      navigate('/exam');
+    }
   };
 
   useEffect(() => {
