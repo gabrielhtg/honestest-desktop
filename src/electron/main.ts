@@ -26,7 +26,7 @@ app.on('ready', async () => {
 
   if (runningInVM) {
     console.log('Virtual env detected');
-    // mainWindow.loadURL('https://id.wikipedia.org/wiki/HTTP_404');
+    mainWindow.loadURL('https://id.wikipedia.org/wiki/HTTP_404');
   }
 
   if (isDev()) {
@@ -36,15 +36,15 @@ app.on('ready', async () => {
     // Menu.setApplicationMenu(null);
   }
 
-  mainWindow.webContents.on('will-navigate', (event) => {
-    event.preventDefault();
-  });
+  // mainWindow.webContents.on('will-navigate', (event) => {
+  //   event.preventDefault();
+  // });
 
-  mainWindow.webContents.on('before-input-event', (event, input) => {
-    if (input.type === 'keyDown' && input.key === 'BrowserBack') {
-      event.preventDefault();
-    }
-  });
+  // mainWindow.webContents.on('before-input-event', (event, input) => {
+  //   if (input.type === 'keyDown' && input.key === 'BrowserBack') {
+  //     event.preventDefault();
+  //   }
+  // });
 
   dataManagementHandlers();
   decryptExamFile();
@@ -58,25 +58,49 @@ ipcMain.on('app-exit', () => {
 
 ipcMain.handle('start_exam_mode', async () => {
   if (mainWindow) {
-    // mainWindow.setKiosk(true);
+    mainWindow.setKiosk(true);
     mainWindow.setFullScreen(true);
     mainWindow.setMinimizable(false);
   }
 
-  killLinuxApp('telegram');
-  killLinuxApp('Discord');
-  killWindowsApp('Telegram.exe');
-  killWindowsApp('Discord.exe');
+  // kill linux app
+  // killLinuxApp('telegram');
+  // killLinuxApp('Discord');
+  // killLinuxApp('firefox-bin');
+  // killLinuxApp('chrome');
+  // killLinuxApp('obs');
+  // killLinuxApp('zoom');
+
+  // kill windows app
+  // killWindowsApp('Telegram.exe');
+  // killWindowsApp('Discord.exe');
+  // killWindowsApp('chrome.exe');
+  // killWindowsApp('msedge.exe');
+  // killWindowsApp('WhatsApp.exe');
+  // killWindowsApp('TeamViewer_Service.exe');
+  // killWindowsApp('flameshot.exe');
+  // killWindowsApp('kdeconnect-indicator.exe');
+  // killWindowsApp('kdeconnectd.exe');
+  // killWindowsApp('brave.exe');
+  // killWindowsApp('Zoom.exe');
+  // killWindowsApp('Notepad.exe');
+  // killWindowsApp('AvastBrowser.exe');
+  // killWindowsApp('firefox.exe');
+  // killWindowsApp('opera.exe');
+  // killWindowsApp('opera_autoupdate.exe');
+  // killWindowsApp('obs64.exe');
+  // killWindowsApp('Spotify.exe');
+  // killWindowsApp('Lightshot.exe');
 
   if (!isDev()) {
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
-    mainWindow.on('blur', () => {
-      mainWindow.focus();
-    });
-    mainWindow.on('close', (event) => {
-      event.preventDefault(); // Mencegah jendela tertutup
-      console.log('Alt+F4 atau close dicegah!');
-    });
+    // mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    // mainWindow.on('blur', () => {
+    //   mainWindow.focus();
+    // });
+    // mainWindow.on('close', (event) => {
+    //   event.preventDefault(); // Mencegah jendela tertutup
+    //   console.log('Alt+F4 atau close dicegah!');
+    // });
   }
 
   // matikan ini jika sedang development
@@ -95,14 +119,14 @@ ipcMain.handle('start_exam_mode', async () => {
   };
 });
 
-app.on('browser-window-focus', function () {
-  globalShortcut.register('CommandOrControl+R', () => {
-    console.log('CommandOrControl+R is pressed: Shortcut Disabled');
-  });
-  globalShortcut.register('F5', () => {
-    console.log('F5 is pressed: Shortcut Disabled');
-  });
-});
+// app.on('browser-window-focus', function () {
+//   globalShortcut.register('CommandOrControl+R', () => {
+//     console.log('CommandOrControl+R is pressed: Shortcut Disabled');
+//   });
+//   globalShortcut.register('F5', () => {
+//     console.log('F5 is pressed: Shortcut Disabled');
+//   });
+// });
 
 app.on('browser-window-blur', function () {
   globalShortcut.unregister('CommandOrControl+R');

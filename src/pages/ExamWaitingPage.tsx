@@ -28,8 +28,12 @@ import {
   BatteryLow,
   BatteryMedium,
   BatteryWarning,
-  LogOut
+  LogOut,
+  Send
 } from 'lucide-react';
+import axios from 'axios';
+import { toast } from 'sonner';
+import { apiUrl } from '@/lib/env.ts';
 
 export function ExamWaitingPage() {
   const [examData, setExamData] = useState<any>();
@@ -46,6 +50,48 @@ export function ExamWaitingPage() {
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [exitPassword, setExitPassword] = useState('');
   const [exitPasswordErrMsg, setExitPasswordErrMsg] = useState('');
+  const [nim, setNim] = useState<string>('');
+  const [questionData, setQuestionData] = useState([]);
+
+  const handleSubmitExam = async () => {
+    console.log(examResultData);
+    try {
+      console.log(examData);
+      for (let i = 0; i < examResultData.length; i++) {
+        const submitData = await axios.post(`${apiUrl}/exam/submit`, {
+          username: nim,
+          exam: examData,
+          answer: examResultData[i].answers,
+          questions: questionData
+        });
+
+        console.log(submitData.data.message);
+
+        // if (examData.enable_review) {
+        //   if (submitData.status === 200) {
+        //     router.push(`/main/exam/simulate/review/${submitData.data.data.id}`);
+        //   }
+        // } else {
+        //   if (submitData.status === 200) {
+        //     router.push(`/main/exam/simulate/${id}`);
+        //   }
+        // }
+      }
+    } catch (e: any) {
+      toast.error(e.response.message);
+    }
+  };
+
+  const getUserData = async () => {
+    // @ts-ignore
+    const tempNim = await window.electron.store.get('user-nim');
+    // @ts-ignore
+    // const tempName = await window.electron.store.get('user-name');
+    // @ts-ignore
+    // const tempDeviceID = await window.electron.store.get('device-id');
+
+    setNim(tempNim.data);
+  };
 
   const getExamData = async () => {
     // @ts-ignore
@@ -54,7 +100,11 @@ export function ExamWaitingPage() {
 
     // @ts-ignore
     const tempResultData = await window.electron.store.get('exam-result');
-    setExamResultData(tempResultData.data);
+    if (tempResultData.data) {
+      setExamResultData(tempResultData.data);
+    }
+
+    setQuestionData(tempExamData.data.questionsData);
 
     setStartDate(
       format(new Date(tempExamData.data.examData.start_date), 'EEEE, dd MMMM yyyy, hh:mm a')
@@ -74,7 +124,12 @@ export function ExamWaitingPage() {
   const handleExitExam = async () => {
     // @ts-ignore
     await window.electron.stop_exam_mode();
-
+    // @ts-ignore
+    await window.electron.store.delete('exam-result');
+    // @ts-ignore
+    await window.electron.store.delete('answers');
+    // @ts-ignore
+    await window.electron.store.delete('exam-data');
     navigate('/main');
   };
 
@@ -91,6 +146,7 @@ export function ExamWaitingPage() {
   useEffect(() => {
     getExamData().then();
     handleGetBatteryInfo().then();
+    getUserData().then();
 
     const updateTime = () => {
       const now = new Date();
@@ -178,9 +234,9 @@ export function ExamWaitingPage() {
                         {format(new Date(examResult.created_at), 'EEEE, dd MMMM yyyy, hh:mm a')}
                       </TableCell>
                       <TableCell>
-                        {examResult.total_score} / {examResult.expected_score} (
+                        {examResult.total_score} / {examResult.expected_score}{' '}
                         <span className={'font-bold'}>
-                          {((examResult.total_score / examResult.expected_score) * 100).toFixed(2)}
+                          ({((examResult.total_score / examResult.expected_score) * 100).toFixed(2)}
                           %)
                         </span>
                       </TableCell>
@@ -204,50 +260,107 @@ export function ExamWaitingPage() {
         )}
 
         <div className={'flex justify-center gap-3'}>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>{examResultData?.length > 0 ? 'Start Again' : 'Start Exam'}</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className={'mb-5'}>Enter Start Password</DialogTitle>
-                <DialogDescription className={'text-base text-primary'}>
-                  Enter the password to start the exam. Ask the teacher/exam supervisor for the
-                  password if you haven&#39;t got it.
-                </DialogDescription>
-                <div>
-                  <Input
-                    value={inputStartPassword}
-                    onChange={(e) => {
-                      setInputStartPassword(e.target.value);
-                    }}
-                    type={'password'}
-                    className={'mt-3'}
-                    autoComplete={'new-password'}
-                  />
-                  <span className={'text-sm text-red-400'}>{inputStartPasswordValidation}</span>
-                  <div className={'mt-3 flex gap-3'}>
-                    <Button
-                      onClick={() => {
-                        setInputStartPasswordValidation('');
-                        if (examData.start_password === inputStartPassword) {
-                          navigate('/exam-start');
-                        } else {
-                          setInputStartPasswordValidation(
-                            `Incorrect Start Password ${examData.start_password}`
-                          );
-                        }
-                      }}>
-                      Start
-                    </Button>
-                    <DialogClose asChild>
-                      <Button variant={'secondary'}>Cancel</Button>
-                    </DialogClose>
+          <Button
+            onClick={() => {
+              handleSubmitExam().then();
+            }}>
+            <Send /> Submit Exam
+          </Button>
+          {examResultData?.length == 0 ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>Start Exam</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className={'mb-5'}>Enter Start Password</DialogTitle>
+                  <DialogDescription className={'text-base text-primary'}>
+                    Enter the password to start the exam. Ask the teacher/exam supervisor for the
+                    password if you haven&#39;t got it.
+                  </DialogDescription>
+                  <div>
+                    <Input
+                      value={inputStartPassword}
+                      onChange={(e) => {
+                        setInputStartPassword(e.target.value);
+                      }}
+                      type={'password'}
+                      className={'mt-3'}
+                      autoComplete={'new-password'}
+                    />
+                    <span className={'text-sm text-red-400'}>{inputStartPasswordValidation}</span>
+                    <div className={'mt-3 flex gap-3'}>
+                      <Button
+                        onClick={() => {
+                          setInputStartPasswordValidation('');
+                          if (examData.start_password === inputStartPassword) {
+                            navigate('/exam-start');
+                          } else {
+                            setInputStartPasswordValidation(`Incorrect Start Password`);
+                          }
+                        }}>
+                        Start
+                      </Button>
+                      <DialogClose asChild>
+                        <Button variant={'secondary'}>Cancel</Button>
+                      </DialogClose>
+                    </div>
                   </div>
-                </div>
-              </DialogHeader>
-            </DialogContent>
-          </Dialog>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            ''
+          )}
+
+          {examResultData?.length > 0 && examData.allowed_attempts < examResultData?.length ? (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>Start Again</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle className={'mb-5'}>Enter Start Password</DialogTitle>
+                  <DialogDescription className={'text-base text-primary'}>
+                    Enter the password to start the exam. Ask the teacher/exam supervisor for the
+                    password if you haven&#39;t got it.
+                  </DialogDescription>
+                  <div>
+                    <Input
+                      value={inputStartPassword}
+                      onChange={(e) => {
+                        setInputStartPassword(e.target.value);
+                      }}
+                      type={'password'}
+                      className={'mt-3'}
+                      autoComplete={'new-password'}
+                    />
+                    <span className={'text-sm text-red-400'}>{inputStartPasswordValidation}</span>
+                    <div className={'mt-3 flex gap-3'}>
+                      <Button
+                        onClick={() => {
+                          setInputStartPasswordValidation('');
+                          if (examData.start_password === inputStartPassword) {
+                            navigate('/exam-start');
+                          } else {
+                            setInputStartPasswordValidation(
+                              `Incorrect Start Password ${examData.start_password}`
+                            );
+                          }
+                        }}>
+                        Start
+                      </Button>
+                      <DialogClose asChild>
+                        <Button variant={'secondary'}>Cancel</Button>
+                      </DialogClose>
+                    </div>
+                  </div>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
+          ) : (
+            ''
+          )}
         </div>
       </div>
 

@@ -82,7 +82,8 @@ export default function ExamReviewPage() {
       total_score: tempScore,
       expected_score: tempTotalScore,
       attempt: examResultData.length + 1,
-      created_at: new Date()
+      created_at: new Date(),
+      answers: tempAnswers.data
     });
 
     setAnswers(tempAnswers.data);
