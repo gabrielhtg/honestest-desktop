@@ -13,7 +13,8 @@ export function dataManagementHandlers() {
 
   ipcMain.handle('store-get', (event, dataName: string) => {
     return {
-      message: 'success'
+      message: 'success',
+      data: store.get(dataName)
     };
   });
 
