@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog.tsx';
-import { Copy, Fingerprint, LogOut, Menu, RotateCcw, Save } from 'lucide-react';
+import { Camera, Copy, Fingerprint, LogOut, Menu, RotateCcw, Save } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label.tsx';
@@ -273,7 +273,10 @@ export function MainPage() {
 
       <div className={'flex justify-end w-full gap-3 mt-10'}>
         <Button variant={'outline'} asChild>
-          <Link to={'/check-readiness'}>Check Readiness</Link>
+          <Link to={'/check-readiness'}>
+            <Camera />
+            Check Readiness
+          </Link>
         </Button>
 
         <div className={''}>

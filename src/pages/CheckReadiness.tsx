@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
+import { Button } from '@/components/ui/button.tsx';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router';
 
 export default function CheckReadiness() {
   // const [deviceId, setDeviceId] = useState<any>({});
   const [devices, setDevices] = useState<any>([]);
+  const navigate = useNavigate();
 
   const handleDevices = useCallback(
     (mediaDevices: any) =>
@@ -31,6 +35,13 @@ export default function CheckReadiness() {
           </div>
         </div>
       ))}
+
+      <Button
+        onClick={() => {
+          navigate('/main');
+        }}>
+        <ArrowLeft /> Back
+      </Button>
     </div>
   );
 }
