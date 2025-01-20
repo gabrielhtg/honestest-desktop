@@ -9,6 +9,7 @@ import { generateCredentialFile } from './utils/generate-credential-file.js';
 import { killLinuxApp } from './utils/kill-app-linux.js';
 import { killWindowsApp } from './utils/kill-app-windows.js';
 import * as os from 'node:os';
+import { showFile } from './utils/show-file.js';
 
 let mainWindow: BrowserWindow;
 
@@ -54,6 +55,7 @@ app.on('ready', async () => {
   dataManagementHandlers();
   decryptExamFile();
   generateCredentialFile();
+  showFile();
   // pollResources();
 });
 

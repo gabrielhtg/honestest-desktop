@@ -34,6 +34,7 @@ import {
 import axios from 'axios';
 import { toast } from 'sonner';
 import { apiUrl } from '@/lib/env.ts';
+import { Toaster } from '@/components/ui/sonner.tsx';
 
 export function ExamWaitingPage() {
   const [examData, setExamData] = useState<any>();
@@ -52,11 +53,10 @@ export function ExamWaitingPage() {
   const [exitPasswordErrMsg, setExitPasswordErrMsg] = useState('');
   const [nim, setNim] = useState<string>('');
   const [questionData, setQuestionData] = useState([]);
+  const [banyakSubmit, setBanyakSubmit] = useState(0);
 
   const handleSubmitExam = async () => {
-    console.log(examResultData);
     try {
-      console.log(examData);
       for (let i = 0; i < examResultData.length; i++) {
         const submitData = await axios.post(`${apiUrl}/exam/submit`, {
           username: nim,
@@ -65,7 +65,8 @@ export function ExamWaitingPage() {
           questions: questionData
         });
 
-        console.log(submitData.data.message);
+        toast.success(submitData.data.message);
+        setBanyakSubmit(banyakSubmit + 1);
 
         // if (examData.enable_review) {
         //   if (submitData.status === 200) {
@@ -260,12 +261,16 @@ export function ExamWaitingPage() {
         )}
 
         <div className={'flex justify-center gap-3'}>
-          <Button
-            onClick={() => {
-              handleSubmitExam().then();
-            }}>
-            <Send /> Submit Exam
-          </Button>
+          {examResultData?.length > 0 && banyakSubmit < examData.allowed_attempts ? (
+            <Button
+              onClick={() => {
+                handleSubmitExam().then();
+              }}>
+              <Send /> Submit Exam
+            </Button>
+          ) : (
+            ''
+          )}
           {examResultData?.length == 0 ? (
             <Dialog>
               <DialogTrigger asChild>
@@ -362,6 +367,7 @@ export function ExamWaitingPage() {
             ''
           )}
         </div>
+        <Toaster />
       </div>
 
       {/*Bagian bar bawah*/}

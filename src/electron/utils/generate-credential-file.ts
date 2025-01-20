@@ -9,8 +9,6 @@ export function generateCredentialFile() {
     const filePath = path.join(documentsPath, `${dataObj.nim}_${dataObj.name}.ta12c`);
     fs.writeFileSync(filePath, data);
 
-    shell.showItemInFolder(filePath);
-
     return {
       message: 'success',
       data: filePath

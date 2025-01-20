@@ -108,7 +108,14 @@ export function MainPage() {
     );
 
     toast.info(`Credential file saved at ${response.data}`, {
-      duration: 5000
+      duration: 5000,
+      action: {
+        label: <Button>Open</Button>,
+        onClick: async () => {
+          // @ts-ignore
+          await window.electron.show_file(response.data);
+        }
+      }
     });
   };
 
