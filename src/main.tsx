@@ -7,6 +7,7 @@ import { MainPage } from '@/pages/MainPage.tsx';
 import { ExamWaitingPage } from '@/pages/ExamWaitingPage.tsx';
 import ExamStartPage from '@/pages/ExamStartPage.tsx';
 import ExamReviewPage from '@/pages/ExamReviewPage.tsx';
+import CheckReadiness from '@/pages/CheckReadiness.tsx';
 
 const router = createHashRouter([
   {
@@ -28,6 +29,10 @@ const router = createHashRouter([
   {
     path: '/exam-review',
     element: <ExamReviewPage />
+  },
+  {
+    path: '/check-readiness',
+    element: <CheckReadiness />
   }
 ]);
 

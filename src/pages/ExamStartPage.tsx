@@ -431,7 +431,7 @@ export default function ExamStartPage() {
 
           {/*sebelah kanan*/}
           <div className={'max-w-xs w-full flex flex-col gap-5'}>
-            <Webcam />
+            <Webcam className={'-scale-x-100'} />
             <div className={'border rounded-lg p-5 flex flex-col'}>
               <span className={'font-bold mb-5'}>Question List</span>
 

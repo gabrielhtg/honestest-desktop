@@ -16,7 +16,7 @@ import { Copy, Fingerprint, LogOut, Menu, RotateCcw, Save } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label.tsx';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { Toaster } from '@/components/ui/sonner.tsx';
 import {
   DropdownMenu,
@@ -272,82 +272,88 @@ export function MainPage() {
       </div>
 
       <div className={'flex justify-end w-full gap-3 mt-10'}>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant={'outline'}>
-              <Menu />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className={'mr-10'}>
-            <DropdownMenuItem
-              className={'text-red-500'}
-              onClick={() => {
-                setOpenClearDialog(true);
-              }}>
-              <RotateCcw />
-              Clear App Data
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                setOpenExitDialog(true);
-              }}>
-              <LogOut />
-              Exit App
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button variant={'outline'} asChild>
+          <Link to={'/check-readiness'}>Check Readiness</Link>
+        </Button>
 
-        <Dialog open={openClearDialog} onOpenChange={setOpenClearDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className={'text-center'}>Clear HonesTest Data</DialogTitle>
-              <DialogDescription className={'text-center'}>
-                Are you sure to clear all of the application data? This action can't be undone.
-              </DialogDescription>
-              <DialogFooter>
-                <div className={'w-full flex gap-2 mt-3 justify-center'}>
-                  <Button
-                    onClick={() => {
-                      clearAppData().then();
-                      navigate('/');
-                    }}>
-                    Yes
-                  </Button>
+        <div className={''}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant={'outline'}>
+                <Menu />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className={'mr-10'}>
+              <DropdownMenuItem
+                className={'text-red-500'}
+                onClick={() => {
+                  setOpenClearDialog(true);
+                }}>
+                <RotateCcw />
+                Clear App Data
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  setOpenExitDialog(true);
+                }}>
+                <LogOut />
+                Exit App
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-                  <DialogClose asChild>
-                    <Button variant={'secondary'}>Cancel</Button>
-                  </DialogClose>
-                </div>
-              </DialogFooter>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+          <Dialog open={openClearDialog} onOpenChange={setOpenClearDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className={'text-center'}>Clear HonesTest Data</DialogTitle>
+                <DialogDescription className={'text-center'}>
+                  Are you sure to clear all of the application data? This action can't be undone.
+                </DialogDescription>
+                <DialogFooter>
+                  <div className={'w-full flex gap-2 mt-3 justify-center'}>
+                    <Button
+                      onClick={() => {
+                        clearAppData().then();
+                        navigate('/');
+                      }}>
+                      Yes
+                    </Button>
 
-        <Dialog open={openExitDialog} onOpenChange={setOpenExitDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className={'text-center'}>Exit Application</DialogTitle>
-              <DialogDescription className={'text-center'}>
-                Are you sure you want to leave this application?
-              </DialogDescription>
-              <DialogFooter>
-                <div className={'w-full flex gap-2 mt-3 justify-center'}>
-                  <Button
-                    onClick={() => {
-                      // @ts-ignore
-                      window.electron.exit();
-                    }}>
-                    Yes
-                  </Button>
+                    <DialogClose asChild>
+                      <Button variant={'secondary'}>Cancel</Button>
+                    </DialogClose>
+                  </div>
+                </DialogFooter>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
 
-                  <DialogClose asChild>
-                    <Button variant={'secondary'}>Cancel</Button>
-                  </DialogClose>
-                </div>
-              </DialogFooter>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
+          <Dialog open={openExitDialog} onOpenChange={setOpenExitDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className={'text-center'}>Exit Application</DialogTitle>
+                <DialogDescription className={'text-center'}>
+                  Are you sure you want to leave this application?
+                </DialogDescription>
+                <DialogFooter>
+                  <div className={'w-full flex gap-2 mt-3 justify-center'}>
+                    <Button
+                      onClick={() => {
+                        // @ts-ignore
+                        window.electron.exit();
+                      }}>
+                      Yes
+                    </Button>
+
+                    <DialogClose asChild>
+                      <Button variant={'secondary'}>Cancel</Button>
+                    </DialogClose>
+                  </div>
+                </DialogFooter>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Toaster />
