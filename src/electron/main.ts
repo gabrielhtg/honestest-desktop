@@ -8,6 +8,7 @@ import { getBatteryPercentage, isCharging, isVirtualMachine } from './utils/syst
 import { generateCredentialFile } from './utils/generate-credential-file.js';
 import { killLinuxApp } from './utils/kill-app-linux.js';
 import { killWindowsApp } from './utils/kill-app-windows.js';
+import * as os from 'node:os';
 
 let mainWindow: BrowserWindow;
 
@@ -19,8 +20,11 @@ app.on('ready', async () => {
     minimizable: true,
     webPreferences: {
       preload: getPreloadPath()
-    }
+    },
+    icon: path.join(app.getAppPath(), isDev() ? 'logo.png' : '../logo.png')
   });
+
+  console.log(os.platform());
 
   const runningInVM = await isVirtualMachine();
 
