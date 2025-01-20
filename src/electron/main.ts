@@ -21,10 +21,11 @@ app.on('ready', async () => {
     webPreferences: {
       preload: getPreloadPath()
     },
-    icon: path.join(app.getAppPath(), isDev() ? 'logo.png' : '../logo.png')
+    icon: path.join(
+      app.getAppPath(),
+      isDev() ? 'logo.png' : os.platform() === 'win32' ? 'logo.png' : '../logo.png'
+    )
   });
-
-  console.log(os.platform());
 
   const runningInVM = await isVirtualMachine();
 
