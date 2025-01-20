@@ -18,6 +18,7 @@ import ReactQuill, { Quill } from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import QuillResizeImage from 'quill-resize-image';
 import { BottomBar } from '@/components/custom/BottomBar.tsx';
+import Webcam from 'react-webcam';
 Quill.register('modules/resize', QuillResizeImage);
 
 export default function ExamStartPage() {
@@ -430,6 +431,7 @@ export default function ExamStartPage() {
 
           {/*sebelah kanan*/}
           <div className={'max-w-xs w-full flex flex-col gap-5'}>
+            <Webcam />
             <div className={'border rounded-lg p-5 flex flex-col'}>
               <span className={'font-bold mb-5'}>Question List</span>
 
