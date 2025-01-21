@@ -16,16 +16,21 @@ export default function CheckReadiness() {
   const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
   const [runningMode, setRunningMode] = useState<'IMAGE' | 'VIDEO'>('IMAGE');
   const [movement, setMovement] = useState('');
+  const [appPath, setAppPath] = useState('');
 
   const createFaceLandmarker = async () => {
+    // @ts-ignore
+    const appPath: string = await window.electron.get_app_path();
     const filesetResolver = await FilesetResolver.forVisionTasks(
       // 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
-      '/mediapipe/wasm'
+      `./mediapipe/wasm`
     );
+
+    setAppPath(appPath);
     const landmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
       baseOptions: {
         // modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
-        modelAssetPath: '/face_landmarker.task',
+        modelAssetPath: './face_landmarker.task',
         delegate: 'GPU'
       },
       outputFaceBlendshapes: true,
@@ -128,6 +133,8 @@ export default function CheckReadiness() {
   return (
     <div className={'w-screen h-screen flex items-center flex-col justify-center'}>
       <h1 className={'text-center font-bold text-3xl'}>Check Readiness</h1>
+
+      <p>{`${appPath}/dist-react/mediapipe/wasm`}</p>
 
       <div className={'relative mt-5'}>
         <Webcam
