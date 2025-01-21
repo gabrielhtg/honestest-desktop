@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import Webcam from 'react-webcam';
 import {
   DrawingUtils,
   FaceLandmarker,
@@ -6,60 +7,53 @@ import {
   // @ts-ignore
 } from 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18';
 import { Button } from '@/components/ui/button.tsx';
-import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router';
+import { ArrowLeft } from 'lucide-react';
 
 export default function CheckReadiness() {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const webcamRef = useRef<Webcam | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
   const [runningMode, setRunningMode] = useState<'IMAGE' | 'VIDEO'>('IMAGE');
+  const [movement, setMovement] = useState('');
 
   const createFaceLandmarker = async () => {
     const filesetResolver = await FilesetResolver.forVisionTasks(
-      'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
+      // 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
+      '/mediapipe/wasm'
     );
     const landmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
       baseOptions: {
-        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+        // modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+        modelAssetPath: '/face_landmarker.task',
         delegate: 'GPU'
       },
       outputFaceBlendshapes: true,
       runningMode,
-      numFaces: 1
+      numFaces: 3
     });
     setFaceLandmarker(landmarker);
   };
 
-  const enableWebcam = () => {
-    if (!faceLandmarker) {
-      console.log('FaceLandmarker not loaded yet.');
-      return;
-    }
-
-    if (videoRef.current) {
-      const constraints = { video: true };
-      navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.addEventListener('loadeddata', () => {
-            const video = videoRef.current;
-            const canvas = canvasRef.current;
-            if (video && canvas) {
-              canvas.width = video.videoWidth;
-              canvas.height = video.videoHeight;
-            }
-            predictWebcam();
-          });
-        }
-      });
+  const detectMovement = (landmarks: any) => {
+    const nose = landmarks[1]; // Nose tip coordinates
+    if (nose.x < 0.45) {
+      setMovement('Melihat kanan');
+    } else if (nose.x > 0.55) {
+      setMovement('Melihat kiri');
+    } else if (nose.y < 0.45) {
+      setMovement('Melihat atas');
+    } else if (nose.y > 0.55) {
+      setMovement('Melihat bawah');
+    } else {
+      setMovement('');
     }
   };
 
   const predictWebcam = async () => {
-    if (!faceLandmarker || !videoRef.current || !canvasRef.current) return;
+    if (!faceLandmarker || !webcamRef.current || !canvasRef.current) return;
 
-    const video = videoRef.current;
+    const video = webcamRef.current.video as HTMLVideoElement;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const drawingUtils = new DrawingUtils(ctx!);
@@ -104,21 +98,30 @@ export default function CheckReadiness() {
           drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS, {
             color: '#30FF30'
           });
+
+          detectMovement(landmarks);
         });
       }
       requestAnimationFrame(processFrame);
     };
 
-    processFrame();
+    processFrame().then();
   };
 
   useEffect(() => {
-    createFaceLandmarker();
+    createFaceLandmarker().then();
   }, []);
 
   useEffect(() => {
-    if (faceLandmarker) {
-      enableWebcam();
+    if (faceLandmarker && webcamRef.current) {
+      const video = webcamRef.current.video as HTMLVideoElement;
+      video.addEventListener('loadeddata', () => {
+        if (canvasRef.current) {
+          canvasRef.current.width = video.videoWidth;
+          canvasRef.current.height = video.videoHeight;
+        }
+        predictWebcam().then();
+      });
     }
   }, [faceLandmarker]);
 
@@ -127,15 +130,15 @@ export default function CheckReadiness() {
       <h1 className={'text-center font-bold text-3xl'}>Check Readiness</h1>
 
       <div className={'relative mt-5'}>
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          className={'absolute top-0 left-0 -z-50'}
+        <Webcam
+          ref={webcamRef}
+          audio={false}
+          className={'absolute top-0 left-0 -z-50 -scale-x-100'}
         />
-        <canvas ref={canvasRef} className={'z-10'} />
+        <canvas ref={canvasRef} className={'z-10 -scale-x-100'} />
       </div>
+
+      <span>{movement}</span>
 
       <Button className={'mt-3'} asChild>
         <Link to={'/main'}>
