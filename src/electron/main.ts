@@ -159,7 +159,6 @@ ipcMain.handle('stop_exam_mode', async () => {
 });
 
 ipcMain.handle('get_app_path', async () => {
-  console.log(app.getAppPath());
   return app.getAppPath();
 });
 
