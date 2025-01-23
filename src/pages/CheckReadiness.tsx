@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Webcam from 'react-webcam';
 // import {
 //   DrawingUtils,
@@ -152,7 +152,7 @@ export default function CheckReadiness() {
     const saveImageResponse = await window.electron.save_image(image);
   };
 
-  const capture = () => {
+  const capture = useCallback(() => {
     console.log(lastScreenshotTime);
     if (lastScreenshotTime == null) {
       lastScreenshotTime = new Date().getTime();
@@ -165,7 +165,7 @@ export default function CheckReadiness() {
         saveImage(imageSrc).then();
       }
     }
-  };
+  }, [webcamRef]);
 
   useEffect(() => {
     createFaceLandmarker().then();
