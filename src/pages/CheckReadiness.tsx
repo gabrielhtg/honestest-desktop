@@ -75,7 +75,10 @@ export default function CheckReadiness() {
   };
 
   const getBanyakOrangMessage = (banyakOrang: number) => {
-    if (banyakOrang > 0) {
+    if (banyakOrang > 0 && banyakOrang < 2) {
+      return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
+    } else if (banyakOrang > 1) {
+      capture();
       return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
     } else {
       capture();

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, globalShortcut } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, globalShortcut, desktopCapturer } from 'electron';
 import path from 'node:path';
 import { isDev } from './utils/check-dev.js';
 import { getPreloadPath } from './utils/path-resolver.js';
@@ -168,23 +168,36 @@ ipcMain.handle('save_image', async (event, base64Data) => {
   try {
     const outputPath = path.join(app.getAppPath(), 'temp_exam_result');
 
-    // console.log(base64Data);
-    // console.log(outputPath);
-
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath, { recursive: true });
     }
 
-    const fileName = `capture_${formatDate()}.jpeg`;
-    const filePath = path.join(outputPath, fileName);
+    await desktopCapturer
+      .getSources({
+        types: ['screen'],
+        thumbnailSize: {
+          width: 1920,
+          height: 1080
+        }
+      })
+      .then((sources: any) => {
+        let image = sources[0].thumbnail.toDataURL();
 
-    // Hapus header base64
-    const cleanBase64Data = base64Data.replace(/^data:image\/jpeg;base64,/, '');
+        fs.writeFileSync(
+          path.join(outputPath, `screenshot_${formatDate()}.png`),
+          image.replace(/^data:image\/png;base64,/, ''),
+          'base64'
+        );
+      });
 
     // Simpan gambar ke disk
-    fs.writeFileSync(filePath, cleanBase64Data, 'base64');
+    fs.writeFileSync(
+      path.join(outputPath, `gesture_${formatDate()}.jpeg`),
+      base64Data.replace(/^data:image\/jpeg;base64,/, ''),
+      'base64'
+    );
 
-    return { success: true, filePath };
+    return { success: true, data: path.join(outputPath, `gesture_${formatDate()}.jpeg`) };
   } catch (error: any) {
     console.error('Error saving image:', error);
     return { success: false, error: error.message };
