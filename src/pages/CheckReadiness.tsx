@@ -169,7 +169,7 @@ export default function CheckReadiness() {
 
   useEffect(() => {
     createFaceLandmarker().then();
-  });
+  }, []);
 
   useEffect(() => {
     if (faceLandmarker && webcamRef.current) {
