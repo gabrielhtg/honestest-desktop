@@ -9,7 +9,6 @@ import Webcam from 'react-webcam';
 import { Button } from '@/components/ui/button.tsx';
 import { Link } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
-import { getBanyakOrangMessage } from '@/utils/getBanyakOrangMessage.ts';
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 // import {
 //   Select,
@@ -24,6 +23,7 @@ export default function CheckReadiness() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
   const [runningMode, setRunningMode] = useState<'IMAGE' | 'VIDEO'>('IMAGE');
+  let lastScreenshotTime: number | null = null;
 
   // state untuk menyimpan data proctoring
   const [movementDescription, setMovementDescription] = useState('');
@@ -50,20 +50,14 @@ export default function CheckReadiness() {
   };
 
   const detectMovement = (faceBlendShapes: any) => {
-    // if (faceBlendShapes.categories[15].score > 0.5 && faceBlendShapes.categories[14].score < 0.5) {
-    //   setMovementDescription('Memalingkan wajah ke kanan');
-    // }
-
     if (faceBlendShapes.categories[16].score > 0.7 && faceBlendShapes.categories[13].score > 0.7) {
       setMovementDescription('Melirik ke kanan');
+      capture();
     }
-
-    // if (faceBlendShapes.categories[16].score > 0.5 && faceBlendShapes.categories[13].score < 0.5) {
-    //   setMovementDescription('Memalingkan wajah ke kiri');
-    // }
 
     if (faceBlendShapes.categories[15].score > 0.7 && faceBlendShapes.categories[14].score > 0.7) {
       setMovementDescription('Melirik ke kiri');
+      capture();
     }
 
     if (
@@ -71,10 +65,21 @@ export default function CheckReadiness() {
       faceBlendShapes.categories[12].score > 0.82
     ) {
       setMovementDescription('Melirik ke bawah');
+      capture();
     }
 
     if (faceBlendShapes.categories[17].score > 0.2 && faceBlendShapes.categories[18].score > 0.2) {
       setMovementDescription('Melirik ke atas');
+      capture();
+    }
+  };
+
+  const getBanyakOrangMessage = (banyakOrang: number) => {
+    if (banyakOrang > 0) {
+      return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
+    } else {
+      capture();
+      return 'Tidak ada orang terdeteksi.';
     }
   };
 
@@ -142,9 +147,31 @@ export default function CheckReadiness() {
     processFrame().then();
   };
 
+  const saveImage = async (image: any) => {
+    // @ts-ignore
+    const saveImageResponse = await window.electron.save_image(image);
+  };
+
+  const capture = () => {
+    console.log(lastScreenshotTime);
+    if (lastScreenshotTime == null) {
+      lastScreenshotTime = new Date().getTime();
+      const imageSrc = webcamRef.current!.getScreenshot();
+      saveImage(imageSrc).then();
+    } else {
+      if (new Date().getTime() - lastScreenshotTime > 3000) {
+        lastScreenshotTime = new Date().getTime();
+        const imageSrc = webcamRef.current!.getScreenshot();
+        saveImage(imageSrc).then();
+      }
+    }
+  };
+
   useEffect(() => {
     createFaceLandmarker().then();
+  });
 
+  useEffect(() => {
     if (faceLandmarker && webcamRef.current) {
       const video = webcamRef.current.video as HTMLVideoElement;
       video.addEventListener('loadeddata', () => {
@@ -165,7 +192,9 @@ export default function CheckReadiness() {
         <Webcam
           ref={webcamRef}
           audio={false}
-          className={'absolute top-0 left-0 -z-50 -scale-x-100'}
+          mirrored={true}
+          screenshotFormat="image/jpeg"
+          className={'absolute top-0 left-0 -z-50'}
         />
         <canvas ref={canvasRef} className={'z-10 -scale-x-100'} />
 

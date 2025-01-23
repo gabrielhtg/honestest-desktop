@@ -10,6 +10,8 @@ import { killLinuxApp } from './utils/kill-app-linux.js';
 import { killWindowsApp } from './utils/kill-app-windows.js';
 import * as os from 'node:os';
 import { showFile } from './utils/show-file.js';
+import fs from 'node:fs';
+import { formatDate } from './utils/format-image-date.js';
 
 let mainWindow: BrowserWindow;
 
@@ -160,6 +162,33 @@ ipcMain.handle('stop_exam_mode', async () => {
 
 ipcMain.handle('get_app_path', async () => {
   return app.getAppPath();
+});
+
+ipcMain.handle('save_image', async (event, base64Data) => {
+  try {
+    const outputPath = path.join(app.getAppPath(), 'temp_exam_result');
+
+    // console.log(base64Data);
+    // console.log(outputPath);
+
+    if (!fs.existsSync(outputPath)) {
+      fs.mkdirSync(outputPath, { recursive: true });
+    }
+
+    const fileName = `capture_${formatDate()}.jpeg`;
+    const filePath = path.join(outputPath, fileName);
+
+    // Hapus header base64
+    const cleanBase64Data = base64Data.replace(/^data:image\/jpeg;base64,/, '');
+
+    // Simpan gambar ke disk
+    fs.writeFileSync(filePath, cleanBase64Data, 'base64');
+
+    return { success: true, filePath };
+  } catch (error: any) {
+    console.error('Error saving image:', error);
+    return { success: false, error: error.message };
+  }
 });
 
 ipcMain.handle('get_battery_percentage', async () => {
