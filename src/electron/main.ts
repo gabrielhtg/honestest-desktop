@@ -12,6 +12,7 @@ import * as os from 'node:os';
 import { showFile } from './utils/show-file.js';
 import fs from 'node:fs';
 import { formatDate } from './utils/format-image-date.js';
+import { registerIpcHandler } from './utils/register-ipc-handler.js';
 
 let mainWindow: BrowserWindow;
 
@@ -59,73 +60,12 @@ app.on('ready', async () => {
   generateCredentialFile();
   showFile();
   // pollResources();
+
+  registerIpcHandler(mainWindow);
 });
 
 ipcMain.on('app-exit', () => {
   app.quit();
-});
-
-ipcMain.handle('start_exam_mode', async () => {
-  if (mainWindow) {
-    mainWindow.setKiosk(true);
-    mainWindow.setFullScreen(true);
-    mainWindow.setMinimizable(false);
-  }
-
-  // kill linux app
-  // killLinuxApp('telegram');
-  // killLinuxApp('Discord');
-  // killLinuxApp('firefox-bin');
-  // killLinuxApp('chrome');
-  // killLinuxApp('obs');
-  // killLinuxApp('zoom');
-
-  // kill windows app
-  // killWindowsApp('Telegram.exe');
-  // killWindowsApp('Discord.exe');
-  // killWindowsApp('chrome.exe');
-  // killWindowsApp('msedge.exe');
-  // killWindowsApp('WhatsApp.exe');
-  // killWindowsApp('TeamViewer_Service.exe');
-  // killWindowsApp('flameshot.exe');
-  // killWindowsApp('kdeconnect-indicator.exe');
-  // killWindowsApp('kdeconnectd.exe');
-  // killWindowsApp('brave.exe');
-  // killWindowsApp('Zoom.exe');
-  // killWindowsApp('Notepad.exe');
-  // killWindowsApp('AvastBrowser.exe');
-  // killWindowsApp('firefox.exe');
-  // killWindowsApp('opera.exe');
-  // killWindowsApp('opera_autoupdate.exe');
-  // killWindowsApp('obs64.exe');
-  // killWindowsApp('Spotify.exe');
-  // killWindowsApp('Lightshot.exe');
-
-  if (!isDev()) {
-    // mainWindow.setAlwaysOnTop(true, 'screen-saver');
-    // mainWindow.on('blur', () => {
-    //   mainWindow.focus();
-    // });
-    // mainWindow.on('close', (event) => {
-    //   event.preventDefault(); // Mencegah jendela tertutup
-    //   console.log('Alt+F4 atau close dicegah!');
-    // });
-  }
-
-  // matikan ini jika sedang development
-  // mainWindow.webContents.on('before-input-event', (event, input) => {
-  //   if (input.control && input.key.toLowerCase() === 'i') {
-  //     event.preventDefault(); // Memblokir Ctrl+I (Developer Tools)
-  //   }
-  //   if (input.key === 'Tab' && input.alt) {
-  //     event.preventDefault(); // Memblokir Alt+Tab
-  //   }
-  // });
-
-  return {
-    message: 'Exam Mode Activated',
-    data: true
-  };
 });
 
 // app.on('browser-window-focus', function () {
@@ -140,80 +80,4 @@ ipcMain.handle('start_exam_mode', async () => {
 app.on('browser-window-blur', function () {
   globalShortcut.unregister('CommandOrControl+R');
   globalShortcut.unregister('F5');
-});
-
-ipcMain.handle('stop_exam_mode', async () => {
-  if (mainWindow) {
-    mainWindow.setKiosk(false);
-    mainWindow.setFullScreen(false);
-    mainWindow.setMinimizable(true);
-  }
-
-  mainWindow.removeAllListeners('blur');
-  mainWindow.removeAllListeners('close');
-
-  mainWindow.webContents.removeAllListeners('before-input-event');
-
-  return {
-    message: 'Exam Mode Activated',
-    data: true
-  };
-});
-
-ipcMain.handle('get_app_path', async () => {
-  return app.getAppPath();
-});
-
-ipcMain.handle('save_image', async (event, base64Data) => {
-  try {
-    const outputPath = path.join(app.getAppPath(), 'temp_exam_result');
-
-    if (!fs.existsSync(outputPath)) {
-      fs.mkdirSync(outputPath, { recursive: true });
-    }
-
-    await desktopCapturer
-      .getSources({
-        types: ['screen'],
-        thumbnailSize: {
-          width: 1920,
-          height: 1080
-        }
-      })
-      .then((sources: any) => {
-        let image = sources[0].thumbnail.toDataURL();
-
-        fs.writeFileSync(
-          path.join(outputPath, `screenshot_${formatDate()}.png`),
-          image.replace(/^data:image\/png;base64,/, ''),
-          'base64'
-        );
-      });
-
-    // Simpan gambar ke disk
-    fs.writeFileSync(
-      path.join(outputPath, `gesture_${formatDate()}.jpeg`),
-      base64Data.replace(/^data:image\/jpeg;base64,/, ''),
-      'base64'
-    );
-
-    return { success: true, data: path.join(outputPath, `gesture_${formatDate()}.jpeg`) };
-  } catch (error: any) {
-    console.error('Error saving image:', error);
-    return { success: false, error: error.message };
-  }
-});
-
-ipcMain.handle('get_battery_percentage', async () => {
-  return {
-    message: 'success',
-    data: await getBatteryPercentage()
-  };
-});
-
-ipcMain.handle('is_charging', async () => {
-  return {
-    message: 'success',
-    data: await isCharging()
-  };
 });

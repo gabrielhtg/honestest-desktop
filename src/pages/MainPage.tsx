@@ -69,7 +69,7 @@ export function MainPage() {
       configPassword
     );
 
-    if (examData) {
+    if (examData.data) {
       const allowedUser: any = examData.data.allowedUserData;
 
       const exists = allowedUser.some(
@@ -85,6 +85,10 @@ export function MainPage() {
         } else {
           // @ts-ignore
           await window.electron.start_exam_mode();
+          // @ts-ignore
+          await window.electron.store.delete('exam-result');
+          // @ts-ignore
+          await window.electron.store.delete('answers');
           navigate('/exam');
         }
       } else {
@@ -222,6 +226,12 @@ export function MainPage() {
                       </Label>
                       <Input
                         id="password"
+                        onKeyDown={(e: any) => {
+                          if (e.key === 'Enter') {
+                            setPasswordErrMessage('');
+                            getExamData().then();
+                          }
+                        }}
                         type={'password'}
                         value={configPassword}
                         onChange={(e) => {
@@ -230,17 +240,15 @@ export function MainPage() {
                         className="col-span-3"
                       />
                       <span className={'text-xs text-red-500 mt-1'}>{passwordErrMessage}</span>
-                    </div>
-                    <DialogFooter>
                       <Button
-                        type="submit"
+                        className={'self-end mt-2'}
                         onClick={() => {
                           setPasswordErrMessage('');
                           getExamData().then();
                         }}>
                         Start
                       </Button>
-                    </DialogFooter>
+                    </div>
                   </DialogContent>
                 </Dialog>
               ) : (

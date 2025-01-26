@@ -10,12 +10,24 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog.tsx';
+import { Input } from '@/components/ui/input.tsx';
 
 export function BottomBar() {
   const [batteryPercentage, setBatteryPercentage] = useState();
   const [isCharging, setIsCharging] = useState();
   const [currentTime, setCurrentTime] = useState('');
   const navigate = useNavigate();
+  const [showDialog, setShowDialog] = useState<boolean>(false);
+  const [exitPassword, setExitPassword] = useState('');
+  const [exitPasswordErrMsg, setExitPasswordErrMsg] = useState('');
+  const [examData, setExamData] = useState<any>();
 
   const handleGetBatteryInfo = async () => {
     // @ts-ignore
@@ -27,14 +39,27 @@ export function BottomBar() {
     setIsCharging(tempIsCharging.data);
   };
 
+  const getExamData = async () => {
+    // @ts-ignore
+    const tempExamData = await window.electron.store.get('exam-data');
+    setExamData(tempExamData.data.examData);
+  };
+
   const handleExitExam = async () => {
     // @ts-ignore
     await window.electron.stop_exam_mode();
-
+    // @ts-ignore
+    await window.electron.store.delete('exam-result');
+    // @ts-ignore
+    await window.electron.store.delete('answers');
+    // @ts-ignore
+    await window.electron.store.delete('exam-data');
     navigate('/main');
   };
 
   useEffect(() => {
+    getExamData().then();
+
     const updateTime = () => {
       const now = new Date();
       const options: any = {
@@ -84,11 +109,61 @@ export function BottomBar() {
         <Button
           variant={'secondary'}
           onClick={() => {
-            handleExitExam().then();
+            setExitPasswordErrMsg('');
+            if (examData.end_password === null) {
+              handleExitExam().then();
+            } else {
+              setShowDialog(true);
+            }
           }}>
           <LogOut />
         </Button>
       </div>
+
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Insert Exit Password</DialogTitle>
+            <DialogDescription className={'pt-3'}>
+              Exit password is required to exit HonesTest.
+            </DialogDescription>
+            <div className={'pt-2'}>
+              <Input
+                type={'password'}
+                value={exitPassword}
+                onKeyDown={(e: any) => {
+                  if (e.key === 'Enter') {
+                    setExitPasswordErrMsg('');
+                    if (examData.end_password === exitPassword) {
+                      handleExitExam().then();
+                    } else {
+                      setExitPasswordErrMsg('Wrong exit password!');
+                    }
+                  }
+                }}
+                onChange={(e) => {
+                  setExitPassword(e.target.value);
+                }}
+              />
+              <span className={'text-sm text-red-500'}>{exitPasswordErrMsg}</span>
+
+              <div className={'mt-3'}>
+                <Button
+                  onClick={() => {
+                    setExitPasswordErrMsg('');
+                    if (examData.end_password === exitPassword) {
+                      handleExitExam().then();
+                    } else {
+                      setExitPasswordErrMsg('Wrong exit password!');
+                    }
+                  }}>
+                  Exit
+                </Button>
+              </div>
+            </div>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

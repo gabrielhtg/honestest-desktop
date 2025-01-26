@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import parse from 'html-react-parser';
 import {
   Table,
@@ -35,6 +35,16 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { apiUrl } from '@/lib/env.ts';
 import { Toaster } from '@/components/ui/sonner.tsx';
+import Webcam from 'react-webcam';
+import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog';
+import face_recognition_image from '@/assets/face_recognition.png';
 
 export function ExamWaitingPage() {
   const [examData, setExamData] = useState<any>();
@@ -54,6 +64,117 @@ export function ExamWaitingPage() {
   const [nim, setNim] = useState<string>('');
   const [questionData, setQuestionData] = useState([]);
   const [banyakSubmit, setBanyakSubmit] = useState(0);
+  const webcamRef = useRef<Webcam | null>(null);
+  const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
+  const [runningMode, setRunningMode] = useState<'IMAGE' | 'VIDEO'>('IMAGE');
+  const [movementDescription, setMovementDescription] = useState('');
+  const [banyakOrang, setBanyakOrang] = useState('');
+  const [cameraAlert, setCameraAlert] = useState(false);
+  const [cameraAlertDialogDesc, setCameraAlertDialogDesc] = useState('');
+
+  const createFaceLandmarker = async () => {
+    // @ts-ignore
+    const filesetResolver = await FilesetResolver.forVisionTasks(
+      // 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
+      `./mediapipe/wasm`
+    );
+
+    const landmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
+      baseOptions: {
+        // modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+        modelAssetPath: './face_landmarker.task',
+        delegate: 'GPU'
+      },
+      outputFaceBlendshapes: true,
+      runningMode,
+      numFaces: 3
+    });
+    setFaceLandmarker(landmarker);
+  };
+
+  const detectMovement = (faceBlendShapes: any) => {
+    if (faceBlendShapes.categories[16].score > 0.7 && faceBlendShapes.categories[13].score > 0.7) {
+      setMovementDescription('Melirik ke kanan');
+    }
+
+    if (faceBlendShapes.categories[15].score > 0.7 && faceBlendShapes.categories[14].score > 0.7) {
+      setMovementDescription('Melirik ke kiri');
+    }
+
+    if (
+      faceBlendShapes.categories[11].score > 0.82 &&
+      faceBlendShapes.categories[12].score > 0.82
+    ) {
+      setMovementDescription('Melirik ke bawah');
+    }
+
+    if (faceBlendShapes.categories[17].score > 0.2 && faceBlendShapes.categories[18].score > 0.2) {
+      setMovementDescription('Melirik ke atas');
+    }
+  };
+
+  const getBanyakOrangMessage = (banyakOrang: number) => {
+    if (banyakOrang > 0 && banyakOrang < 2) {
+      setCameraAlert(false);
+      setCameraAlertDialogDesc('');
+      return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
+    } else if (banyakOrang > 1) {
+      setCameraAlert(true);
+      setCameraAlertDialogDesc(
+        `${banyakOrang} people were detected. 'The exam cannot continue if there are more than one people detected on camera because proctoring is active on this exam.'`
+      );
+      return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
+    } else {
+      setCameraAlert(true);
+      setCameraAlertDialogDesc(
+        'The exam cannot continue if you are not detected on camera because proctoring is active on this exam.'
+      );
+      return 'Tidak ada orang terdeteksi.';
+    }
+  };
+
+  const predictWebcam = async () => {
+    if (!faceLandmarker || !webcamRef.current) return;
+
+    const video = webcamRef.current.video as HTMLVideoElement;
+
+    if (runningMode === 'IMAGE') {
+      setRunningMode('VIDEO');
+      await faceLandmarker.setOptions({ runningMode: 'VIDEO' });
+    }
+
+    const processFrame = async () => {
+      const startTimeMs = performance.now();
+      const results = faceLandmarker.detectForVideo(video, startTimeMs);
+
+      // mengembalikan message banyak orang terdeteksi.
+      setBanyakOrang(getBanyakOrangMessage(results.faceLandmarks.length));
+
+      if (results.faceLandmarks) {
+        // results.faceLandmarks.forEach((landmarks: any) => {
+        results.faceLandmarks.forEach(() => {
+          detectMovement(results.faceBlendshapes[0]);
+        });
+      }
+
+      requestAnimationFrame(processFrame);
+    };
+
+    processFrame().then();
+  };
+
+  useEffect(() => {
+    createFaceLandmarker().then();
+  }, []);
+
+  useEffect(() => {
+    if (faceLandmarker && webcamRef.current) {
+      const video = webcamRef.current.video as HTMLVideoElement;
+      video.addEventListener('loadeddata', () => {
+        predictWebcam().then();
+      });
+    }
+  }, [faceLandmarker]);
 
   const handleSubmitExam = async () => {
     try {
@@ -67,16 +188,6 @@ export function ExamWaitingPage() {
 
         toast.success(submitData.data.message);
         setBanyakSubmit(banyakSubmit + 1);
-
-        // if (examData.enable_review) {
-        //   if (submitData.status === 200) {
-        //     router.push(`/main/exam/simulate/review/${submitData.data.data.id}`);
-        //   }
-        // } else {
-        //   if (submitData.status === 200) {
-        //     router.push(`/main/exam/simulate/${id}`);
-        //   }
-        // }
       }
     } catch (e: any) {
       toast.error(e.response.message);
@@ -182,7 +293,21 @@ export function ExamWaitingPage() {
 
         <div className={'list-disc list-inside'}>{parse(examData ? examData.description : '')}</div>
 
-        <div className={'w-full flex justify-center items-center'}>
+        <div className={'w-full flex justify-center items-center flex-col'}>
+          <div>
+            <Webcam
+              ref={webcamRef}
+              mirrored={true}
+              screenshotFormat={'image/jpeg'}
+              // className={'hidden'}
+            />
+
+            <div className={'text-center'}>
+              <span>{movementDescription}</span> <br />
+              <span>{banyakOrang}</span>
+            </div>
+          </div>
+
           <div className={'border rounded-lg'}>
             <Table className={'max-w-xl text-base'}>
               <TableBody>
@@ -283,33 +408,41 @@ export function ExamWaitingPage() {
                     Enter the password to start the exam. Ask the teacher/exam supervisor for the
                     password if you haven&#39;t got it.
                   </DialogDescription>
-                  <div>
-                    <Input
-                      value={inputStartPassword}
-                      onChange={(e) => {
-                        setInputStartPassword(e.target.value);
-                      }}
-                      type={'password'}
-                      className={'mt-3'}
-                      autoComplete={'new-password'}
-                    />
-                    <span className={'text-sm text-red-400'}>{inputStartPasswordValidation}</span>
-                    <div className={'mt-3 flex gap-3'}>
-                      <Button
-                        onClick={() => {
-                          setInputStartPasswordValidation('');
-                          if (examData.start_password === inputStartPassword) {
-                            navigate('/exam-start');
-                          } else {
-                            setInputStartPasswordValidation(`Incorrect Start Password`);
-                          }
-                        }}>
-                        Start
-                      </Button>
-                      <DialogClose asChild>
-                        <Button variant={'secondary'}>Cancel</Button>
-                      </DialogClose>
-                    </div>
+                  <Input
+                    value={inputStartPassword}
+                    onChange={(e) => {
+                      setInputStartPassword(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        setInputStartPasswordValidation('');
+                        if (examData.start_password === inputStartPassword) {
+                          navigate('/exam-start');
+                        } else {
+                          setInputStartPasswordValidation(`Incorrect Start Password`);
+                        }
+                      }
+                    }}
+                    type={'password'}
+                    className={'mt-3'}
+                    autoComplete={'new-password'}
+                  />
+                  <span className={'text-sm text-red-400'}>{inputStartPasswordValidation}</span>
+                  <div className={'mt-3 flex gap-3'}>
+                    <Button
+                      onClick={() => {
+                        setInputStartPasswordValidation('');
+                        if (examData.start_password === inputStartPassword) {
+                          navigate('/exam-start');
+                        } else {
+                          setInputStartPasswordValidation(`Incorrect Start Password`);
+                        }
+                      }}>
+                      Start
+                    </Button>
+                    <DialogClose asChild>
+                      <Button variant={'secondary'}>Cancel</Button>
+                    </DialogClose>
                   </div>
                 </DialogHeader>
               </DialogContent>
@@ -421,6 +554,16 @@ export function ExamWaitingPage() {
               <Input
                 type={'password'}
                 value={exitPassword}
+                onKeyDown={(e: any) => {
+                  if (e.key === 'Enter') {
+                    setExitPasswordErrMsg('');
+                    if (examData.end_password === exitPassword) {
+                      handleExitExam().then();
+                    } else {
+                      setExitPasswordErrMsg('Wrong exit password!');
+                    }
+                  }
+                }}
                 onChange={(e) => {
                   setExitPassword(e.target.value);
                 }}
@@ -444,6 +587,25 @@ export function ExamWaitingPage() {
           </DialogHeader>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={cameraAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unusual Behaviour Detected</AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className={'flex items-center justify-center w-full mt-5 mb-3'}>
+                <img
+                  className={'w-48'}
+                  src={face_recognition_image}
+                  loading={'eager'}
+                  alt="face_recognition"
+                />
+              </div>
+              {cameraAlertDialogDesc}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

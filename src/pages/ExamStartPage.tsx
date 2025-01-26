@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import parse from 'html-react-parser';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group.tsx';
 import { Checkbox } from '@/components/ui/checkbox.tsx';
@@ -19,6 +19,15 @@ import 'react-quill/dist/quill.snow.css';
 import QuillResizeImage from 'quill-resize-image';
 import { BottomBar } from '@/components/custom/BottomBar.tsx';
 import Webcam from 'react-webcam';
+import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '@/components/ui/alert-dialog.tsx';
+import face_recognition_image from '@/assets/face_recognition.png';
 Quill.register('modules/resize', QuillResizeImage);
 
 export default function ExamStartPage() {
@@ -29,6 +38,19 @@ export default function ExamStartPage() {
   const [selectedQuestion, setSelectedQuestion] = useState<any>();
 
   const navigate = useNavigate();
+
+  // bagian proctoring
+  const webcamRef = useRef<Webcam | null>(null);
+  // const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
+  const [runningMode, setRunningMode] = useState<'IMAGE' | 'VIDEO'>('IMAGE');
+  let lastScreenshotTime: number | null = null;
+  const [cameraAlert, setCameraAlert] = useState(false);
+  const [cameraAlertDialogDesc, setCameraAlertDialogDesc] = useState('');
+
+  // state untuk menyimpan data proctoring
+  const [movementDescription, setMovementDescription] = useState('');
+  const [banyakOrang, setBanyakOrang] = useState('');
 
   // state untuk exam behaviour
   const [hoursLimit, setHoursLimit] = useState<number>();
@@ -75,12 +97,171 @@ export default function ExamStartPage() {
   // state untuk question
   const [questions, setQuestions] = useState<any[]>([]);
 
+  const createFaceLandmarker = async () => {
+    // @ts-ignore
+    const filesetResolver = await FilesetResolver.forVisionTasks(
+      // 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.18/wasm'
+      `./mediapipe/wasm`
+    );
+
+    const landmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
+      baseOptions: {
+        // modelAssetPath: `https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task`,
+        modelAssetPath: './face_landmarker.task',
+        delegate: 'GPU'
+      },
+      outputFaceBlendshapes: true,
+      runningMode,
+      numFaces: 3
+    });
+    setFaceLandmarker(landmarker);
+  };
+
+  const detectMovement = (faceBlendShapes: any) => {
+    if (faceBlendShapes.categories[16].score > 0.7 && faceBlendShapes.categories[13].score > 0.7) {
+      setMovementDescription('Melirik ke kanan');
+      capture();
+    }
+
+    if (faceBlendShapes.categories[15].score > 0.7 && faceBlendShapes.categories[14].score > 0.7) {
+      setMovementDescription('Melirik ke kiri');
+      capture();
+    }
+
+    if (
+      faceBlendShapes.categories[11].score > 0.82 &&
+      faceBlendShapes.categories[12].score > 0.82
+    ) {
+      setMovementDescription('Melirik ke bawah');
+      capture();
+    }
+
+    if (faceBlendShapes.categories[17].score > 0.2 && faceBlendShapes.categories[18].score > 0.2) {
+      setMovementDescription('Melirik ke atas');
+      capture();
+    }
+  };
+
+  const getBanyakOrangMessage = (banyakOrang: number) => {
+    if (banyakOrang > 0 && banyakOrang < 2) {
+      setCameraAlert(false);
+      setCameraAlertDialogDesc('');
+      return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
+    } else if (banyakOrang > 1) {
+      setCameraAlert(true);
+      setCameraAlertDialogDesc(
+        `${banyakOrang} people were detected. 'The exam cannot continue if there are more than one people detected on camera because proctoring is active on this exam.'`
+      );
+      return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
+    } else {
+      setCameraAlert(true);
+      setCameraAlertDialogDesc(
+        'The exam cannot continue if you are not detected on camera because proctoring is active on this exam.'
+      );
+      return 'Tidak ada orang terdeteksi.';
+    }
+  };
+
+  const predictWebcam = async () => {
+    if (!faceLandmarker || !webcamRef.current) return;
+
+    const video = webcamRef.current.video as HTMLVideoElement;
+    // const drawingUtils = new DrawingUtils(ctx!);
+
+    if (runningMode === 'IMAGE') {
+      setRunningMode('VIDEO');
+      await faceLandmarker.setOptions({ runningMode: 'VIDEO' });
+    }
+
+    const processFrame = async () => {
+      const startTimeMs = performance.now();
+      const results = faceLandmarker.detectForVideo(video, startTimeMs);
+
+      // mengembalikan message banyak orang terdeteksi.
+      setBanyakOrang(getBanyakOrangMessage(results.faceLandmarks.length));
+
+      if (results.faceLandmarks) {
+        // results.faceLandmarks.forEach((landmarks: any) => {
+        results.faceLandmarks.forEach(() => {
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_TESSELATION, {
+          //   color: '#C0C0C070',
+          //   lineWidth: 1
+          // });
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE, {
+          //   color: '#FF3030'
+          // });
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW, {
+          //   color: '#FF3030'
+          // });
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_EYE, {
+          //   color: '#30FF30'
+          // });
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW, {
+          //   color: '#30FF30'
+          // });
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_FACE_OVAL, {
+          //   color: '#E0E0E0'
+          // });
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LIPS, {
+          //   color: '#E0E0E0'
+          // });
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_RIGHT_IRIS, {
+          //   color: '#FF3030'
+          // });
+          // drawingUtils.drawConnectors(landmarks, FaceLandmarker.FACE_LANDMARKS_LEFT_IRIS, {
+          //   color: '#30FF30'
+          // });
+          detectMovement(results.faceBlendshapes[0]);
+        });
+        // detectMovement(results.faceBlendshapes[0]);
+      }
+
+      // console.log(results);
+      requestAnimationFrame(processFrame);
+    };
+
+    processFrame().then();
+  };
+
+  const saveImage = async (image: any) => {
+    // @ts-ignore
+    const saveImageResponse = await window.electron.save_image(image);
+  };
+
+  const capture = useCallback(() => {
+    console.log(lastScreenshotTime);
+    if (lastScreenshotTime == null) {
+      lastScreenshotTime = new Date().getTime();
+      const imageSrc = webcamRef.current!.getScreenshot();
+      saveImage(imageSrc).then();
+    } else {
+      if (new Date().getTime() - lastScreenshotTime > 3000) {
+        lastScreenshotTime = new Date().getTime();
+        const imageSrc = webcamRef.current!.getScreenshot();
+        saveImage(imageSrc).then();
+      }
+    }
+  }, [webcamRef]);
+
+  useEffect(() => {
+    createFaceLandmarker().then();
+  }, []);
+
   const handleValueChange = (questionId: number, value: string) => {
     setSelectedAnswers((prev) => ({
       ...prev,
       [questionId]: value
     }));
   };
+
+  useEffect(() => {
+    if (faceLandmarker && webcamRef.current) {
+      const video = webcamRef.current.video as HTMLVideoElement;
+      video.addEventListener('loadeddata', () => {
+        predictWebcam().then();
+      });
+    }
+  }, [faceLandmarker]);
 
   const getExamData = async () => {
     // @ts-ignore
@@ -390,7 +571,7 @@ export default function ExamStartPage() {
           {submitState === 2 ? (
             <div
               className={
-                'flex flex-col w-full overflow-y-scroll scroll-smooth border rounded-lg px-5 pb-5 justify-center items-center'
+                'flex flex-col w-full overflow-y-auto scroll-smooth border rounded-lg px-5 pb-5 justify-center items-center'
               }>
               <div className={'w-full max-w-xl border rounded-lg'}>
                 <Table>
@@ -431,7 +612,16 @@ export default function ExamStartPage() {
 
           {/*sebelah kanan*/}
           <div className={'max-w-xs w-full flex flex-col gap-5'}>
-            <Webcam className={'-scale-x-100'} />
+            <Webcam
+              ref={webcamRef}
+              mirrored={true}
+              screenshotFormat={'image/jpeg'}
+              // className={'hidden'}
+            />
+            <div>
+              <span>{movementDescription}</span> <br />
+              <span>{banyakOrang}</span>
+            </div>
             <div className={'border rounded-lg p-5 flex flex-col'}>
               <span className={'font-bold mb-5'}>Question List</span>
 
@@ -505,29 +695,24 @@ export default function ExamStartPage() {
 
       <BottomBar />
 
-      {/*<AlertDialog open={showDialog}>*/}
-      {/*  <AlertDialogContent>*/}
-      {/*    <AlertDialogHeader>*/}
-      {/*      <AlertDialogTitle*/}
-      {/*        className={'text-center flex flex-col items-center'}*/}
-      {/*      >*/}
-      {/*        {getAlertTitle()}*/}
-      {/*      </AlertDialogTitle>*/}
-      {/*      <AlertDialogDescription className={'text-center'}>*/}
-      {/*        {dialogMsg}*/}
-      {/*      </AlertDialogDescription>*/}
-      {/*    </AlertDialogHeader>*/}
-      {/*    <AlertDialogFooter className={'!justify-center'}>*/}
-      {/*      <Button*/}
-      {/*        onClick={() => {*/}
-      {/*          setShowDialog(false)*/}
-      {/*        }}*/}
-      {/*      >*/}
-      {/*        OK*/}
-      {/*      </Button>*/}
-      {/*    </AlertDialogFooter>*/}
-      {/*  </AlertDialogContent>*/}
-      {/*</AlertDialog>*/}
+      <AlertDialog open={cameraAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unusual Behaviour Detected</AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className={'flex items-center justify-center w-full mt-5 mb-3'}>
+                <img
+                  className={'w-48'}
+                  src={face_recognition_image}
+                  loading={'eager'}
+                  alt="face_recognition"
+                />
+              </div>
+              {cameraAlertDialogDesc}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

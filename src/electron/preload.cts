@@ -19,6 +19,5 @@ electron.contextBridge.exposeInMainWorld('electron', {
   show_file: (filepath: string) => electron.ipcRenderer.invoke('show_file', filepath),
   generate_credential_file: (data: string) =>
     electron.ipcRenderer.invoke('generate-credential-file', data),
-  get_app_path: () => electron.ipcRenderer.invoke('get_app_path'),
   save_image: (imageSrc: any) => electron.ipcRenderer.invoke('save_image', imageSrc)
 });
