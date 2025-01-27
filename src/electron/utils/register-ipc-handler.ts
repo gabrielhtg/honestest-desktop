@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { formatDate } from './format-image-date.js';
 import { getBatteryPercentage, isCharging } from './system-information.js';
 import { isDev } from './check-dev.js';
+import { exec } from 'child_process';
 
 export function registerIpcHandler(mainWindow: any) {
   ipcMain.handle('stop_exam_mode', async () => {
@@ -73,6 +74,43 @@ export function registerIpcHandler(mainWindow: any) {
       message: 'success',
       data: await getBatteryPercentage()
     };
+  });
+
+  ipcMain.handle('create_exam_result_file', async (event, data: any) => {
+    try {
+      const archiverDirectory = path.join(app.getAppPath(), '7z-linux', '7zz');
+
+      // Output directory
+      const documentsPath = path.join(app.getPath('documents'), 'honestest', 'exam_results');
+
+      if (!fs.existsSync(documentsPath)) {
+        fs.mkdirSync(documentsPath, { recursive: true });
+      }
+
+      // tempat zip disimpan di documents/honestest
+      const zipFilePath = path.join(documentsPath, 'exam_result.ta12r');
+
+      const folderPath = `${app.getAppPath()}/temp_exam_result`; // `data.folder` adalah path folder
+
+      fs.writeFileSync(path.join(folderPath, 'data.json'), data);
+
+      exec(`${archiverDirectory} a ${zipFilePath} ${folderPath} -ptest -mhe`);
+
+      // console.log(
+      //   `${archiverDirectory} a ${zipFilePath} ${app.getAppPath()}/${folderPath} -ptest -mhe`
+      // );
+
+      return {
+        message: 'success',
+        data: zipFilePath
+      };
+    } catch (error: any) {
+      console.error('Error creating zip:', error);
+      return {
+        message: 'error',
+        error: error.message
+      };
+    }
   });
 
   ipcMain.handle('is_charging', async () => {

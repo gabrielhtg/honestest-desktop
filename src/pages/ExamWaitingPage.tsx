@@ -177,6 +177,20 @@ export function ExamWaitingPage() {
   }, [faceLandmarker]);
 
   const handleSubmitExam = async () => {
+    const tempResult: any[] = [];
+
+    for (let i = 0; i < examResultData.length; i++) {
+      tempResult.push({
+        username: nim,
+        exam: examData,
+        answer: examResultData[i].answers,
+        questions: questionData
+      });
+    }
+
+    //@ts-ignore
+    await window.electron.create_exam_result_file(JSON.stringify(tempResult));
+
     try {
       for (let i = 0; i < examResultData.length; i++) {
         const submitData = await axios.post(`${apiUrl}/exam/submit`, {
