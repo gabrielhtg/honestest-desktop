@@ -24,10 +24,19 @@ export default function CheckReadiness() {
   const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
   const [runningMode, setRunningMode] = useState<'IMAGE' | 'VIDEO'>('IMAGE');
   let lastScreenshotTime: number | null = null;
+  let lastDetection: number = 0;
+  let lastRightDetection: number = 0;
+  let lastLeftDetection: number = 0;
+  let lastTopDetection: number = 0;
+  let lastDownDetection: number = 0;
 
   // state untuk menyimpan data proctoring
   const [movementDescription, setMovementDescription] = useState('');
   const [banyakOrang, setBanyakOrang] = useState('');
+  let lirikKiri = 0;
+  let lirikKanan = 0;
+  let lirikBawah = 0;
+  let lirikAtas = 0;
 
   const createFaceLandmarker = async () => {
     // @ts-ignore
@@ -50,27 +59,101 @@ export default function CheckReadiness() {
   };
 
   const detectMovement = (faceBlendShapes: any) => {
+    const currentTime = new Date().getTime();
+
     if (faceBlendShapes.categories[16].score > 0.7 && faceBlendShapes.categories[13].score > 0.7) {
-      setMovementDescription('Melirik ke kanan');
-      capture();
+      if (currentTime - lastDetection > 500) {
+        setMovementDescription('Melirik ke kanan');
+        lirikKanan = lirikKanan + 1;
+        lirikKiri = 0;
+        lirikBawah = 0;
+        lirikAtas = 0;
+
+        if (currentTime - lastRightDetection > 5000) {
+          lirikKanan = 0;
+          lastRightDetection = currentTime;
+        }
+
+        if (currentTime - lastRightDetection < 5000 && lirikKanan >= 3) {
+          capture();
+          lirikKanan = 0;
+          lastRightDetection = currentTime;
+        }
+
+        lastDetection = currentTime;
+      }
     }
 
     if (faceBlendShapes.categories[15].score > 0.7 && faceBlendShapes.categories[14].score > 0.7) {
-      setMovementDescription('Melirik ke kiri');
-      capture();
+      if (currentTime - lastDetection > 500) {
+        setMovementDescription('Melirik ke kiri');
+        lirikKanan = 0;
+        lirikKiri = lirikKiri + 1;
+        lirikBawah = 0;
+        lirikAtas = 0;
+
+        if (currentTime - lastLeftDetection > 5000) {
+          lirikKanan = 0;
+          lastLeftDetection = currentTime;
+        }
+
+        if (currentTime - lastLeftDetection < 5000 && lirikKiri >= 3) {
+          capture();
+          lirikKanan = 0;
+          lastLeftDetection = currentTime;
+        }
+
+        lastDetection = currentTime;
+      }
     }
 
     if (
       faceBlendShapes.categories[11].score > 0.82 &&
       faceBlendShapes.categories[12].score > 0.82
     ) {
-      setMovementDescription('Melirik ke bawah');
-      capture();
+      if (currentTime - lastDetection > 500) {
+        setMovementDescription('Melirik ke bawah');
+        lirikKanan = 0;
+        lirikKiri = 0;
+        lirikBawah = lirikBawah + 1;
+        lirikAtas = 0;
+
+        if (currentTime - lastDownDetection > 5000) {
+          lirikKanan = 0;
+          lastDownDetection = currentTime;
+        }
+
+        if (currentTime - lastDownDetection < 5000 && lirikBawah >= 3) {
+          capture();
+          lirikKanan = 0;
+          lastDownDetection = currentTime;
+        }
+
+        lastDetection = currentTime;
+      }
     }
 
     if (faceBlendShapes.categories[17].score > 0.2 && faceBlendShapes.categories[18].score > 0.2) {
-      setMovementDescription('Melirik ke atas');
-      capture();
+      if (currentTime - lastDetection > 500) {
+        setMovementDescription('Melirik ke atas');
+        lirikKanan = 0;
+        lirikKiri = 0;
+        lirikBawah = 0;
+        lirikAtas = lirikAtas + 1;
+
+        if (currentTime - lastTopDetection > 5000) {
+          lirikKanan = 0;
+          lastTopDetection = currentTime;
+        }
+
+        if (currentTime - lastTopDetection < 5000 && lirikAtas >= 3) {
+          capture();
+          lirikKanan = 0;
+          lastTopDetection = currentTime;
+        }
+
+        lastDetection = currentTime;
+      }
     }
   };
 
@@ -152,11 +235,10 @@ export default function CheckReadiness() {
 
   const saveImage = async (image: any) => {
     // @ts-ignore
-    const saveImageResponse = await window.electron.save_image(image);
+    await window.electron.save_image(image);
   };
 
   const capture = useCallback(() => {
-    console.log(lastScreenshotTime);
     if (lastScreenshotTime == null) {
       lastScreenshotTime = new Date().getTime();
       const imageSrc = webcamRef.current!.getScreenshot();

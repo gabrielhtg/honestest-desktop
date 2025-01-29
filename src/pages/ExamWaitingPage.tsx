@@ -71,6 +71,7 @@ export function ExamWaitingPage() {
   const [banyakOrang, setBanyakOrang] = useState('');
   const [cameraAlert, setCameraAlert] = useState(false);
   const [cameraAlertDialogDesc, setCameraAlertDialogDesc] = useState('');
+  const [proctoringLog, setProctoringLog] = useState<any[]>([]);
 
   const createFaceLandmarker = async () => {
     // @ts-ignore
@@ -177,19 +178,22 @@ export function ExamWaitingPage() {
   }, [faceLandmarker]);
 
   const handleSubmitExam = async () => {
-    const tempResult: any[] = [];
+    // const tempResult: any[] = [];
 
-    for (let i = 0; i < examResultData.length; i++) {
-      tempResult.push({
-        username: nim,
-        exam: examData,
-        answer: examResultData[i].answers,
-        questions: questionData
-      });
-    }
+    // for (let i = 0; i < examResultData.length; i++) {
+    //   tempResult.push();
+    // }
 
     //@ts-ignore
-    await window.electron.create_exam_result_file(JSON.stringify(tempResult));
+    await window.electron.create_exam_result_file(
+      JSON.stringify({
+        username: nim,
+        exam: examData,
+        answer: examResultData[0].answers,
+        questions: questionData,
+        proctoringLog: proctoringLog
+      })
+    );
 
     try {
       for (let i = 0; i < examResultData.length; i++) {
@@ -230,6 +234,13 @@ export function ExamWaitingPage() {
       setExamResultData(tempResultData.data);
     }
 
+    // @ts-ignore
+    const tempProctoringLog = await window.electron.store.get('proctoring_log');
+    if (tempProctoringLog.data) {
+      setProctoringLog(tempProctoringLog.data);
+    }
+    console.log(tempProctoringLog.data);
+
     setQuestionData(tempExamData.data.questionsData);
 
     setStartDate(
@@ -256,6 +267,8 @@ export function ExamWaitingPage() {
     await window.electron.store.delete('answers');
     // @ts-ignore
     await window.electron.store.delete('exam-data');
+    // @ts-ignore
+    await window.electron.store.delete('exam-proctoring_log');
     navigate('/main');
   };
 

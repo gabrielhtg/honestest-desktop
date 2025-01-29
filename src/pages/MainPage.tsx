@@ -89,6 +89,8 @@ export function MainPage() {
           await window.electron.store.delete('exam-result');
           // @ts-ignore
           await window.electron.store.delete('answers');
+          // @ts-ignore
+          await window.electron.store.delete('proctoring_log');
           navigate('/exam');
         }
       } else {

@@ -29,7 +29,7 @@ export function registerIpcHandler(mainWindow: any) {
     return app.getAppPath();
   });
 
-  ipcMain.handle('save_image', async (event, base64Data) => {
+  ipcMain.handle('save_image', async (event, base64Data, id: string) => {
     try {
       const outputPath = path.join(app.getAppPath(), 'temp_exam_result');
 
@@ -49,7 +49,7 @@ export function registerIpcHandler(mainWindow: any) {
           let image = sources[0].thumbnail.toDataURL();
 
           fs.writeFileSync(
-            path.join(outputPath, `screenshot_${formatDate()}.png`),
+            path.join(outputPath, `s_${id}.png`),
             image.replace(/^data:image\/png;base64,/, ''),
             'base64'
           );
@@ -57,7 +57,7 @@ export function registerIpcHandler(mainWindow: any) {
 
       // Simpan gambar ke disk
       fs.writeFileSync(
-        path.join(outputPath, `gesture_${formatDate()}.jpeg`),
+        path.join(outputPath, `g_${id}.jpeg`),
         base64Data.replace(/^data:image\/jpeg;base64,/, ''),
         'base64'
       );
@@ -78,6 +78,8 @@ export function registerIpcHandler(mainWindow: any) {
 
   ipcMain.handle('create_exam_result_file', async (event, data: any) => {
     try {
+      const jsonData = JSON.parse(data);
+
       const archiverDirectory = path.join(app.getAppPath(), '7z-linux', '7zz');
 
       // Output directory
@@ -88,13 +90,16 @@ export function registerIpcHandler(mainWindow: any) {
       }
 
       // tempat zip disimpan di documents/honestest
-      const zipFilePath = path.join(documentsPath, 'exam_result.ta12r');
+      const zipFilePath = path.join(
+        documentsPath,
+        `\"${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r\"`
+      );
 
-      const folderPath = `${app.getAppPath()}/temp_exam_result`; // `data.folder` adalah path folder
+      const folderPath = `${app.getAppPath()}/temp_exam_result`;
 
       fs.writeFileSync(path.join(folderPath, 'data.json'), data);
 
-      exec(`${archiverDirectory} a ${zipFilePath} ${folderPath} -ptest -mhe`);
+      exec(`${archiverDirectory} a ${zipFilePath} ${path.join(folderPath, '*')} -ptest -mhe`);
 
       // console.log(
       //   `${archiverDirectory} a ${zipFilePath} ${app.getAppPath()}/${folderPath} -ptest -mhe`

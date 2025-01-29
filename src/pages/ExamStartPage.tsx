@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/alert-dialog.tsx';
 import face_recognition_image from '@/assets/face_recognition.png';
 Quill.register('modules/resize', QuillResizeImage);
+import { v4 } from 'uuid';
 
 export default function ExamStartPage() {
   const [examData, setExamData] = useState<any>(null);
@@ -44,9 +45,19 @@ export default function ExamStartPage() {
   // const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
   const [runningMode, setRunningMode] = useState<'IMAGE' | 'VIDEO'>('IMAGE');
-  let lastScreenshotTime: number | null = null;
   const [cameraAlert, setCameraAlert] = useState(false);
   const [cameraAlertDialogDesc, setCameraAlertDialogDesc] = useState('');
+  let lastScreenshotTime: number | null = null;
+  let lastDetection: number = 0;
+  let lastRightDetection: number = 0;
+  let lastLeftDetection: number = 0;
+  let lastTopDetection: number = 0;
+  let lastDownDetection: number = 0;
+  let lirikKiri = 0;
+  let lirikKanan = 0;
+  let lirikBawah = 0;
+  let lirikAtas = 0;
+  const [proctoringLog, setProctoringLog]: any[] = useState<any[]>([]);
 
   // state untuk menyimpan data proctoring
   const [movementDescription, setMovementDescription] = useState('');
@@ -118,27 +129,121 @@ export default function ExamStartPage() {
   };
 
   const detectMovement = (faceBlendShapes: any) => {
+    const currentTime = new Date().getTime();
+
     if (faceBlendShapes.categories[16].score > 0.7 && faceBlendShapes.categories[13].score > 0.7) {
-      setMovementDescription('Melirik ke kanan');
-      capture();
+      if (currentTime - lastDetection > 500) {
+        setMovementDescription('Melirik ke kanan');
+        lirikKanan = lirikKanan + 1;
+        lirikKiri = 0;
+        lirikBawah = 0;
+        lirikAtas = 0;
+
+        if (currentTime - lastRightDetection > 5000) {
+          lirikKanan = 0;
+          lastRightDetection = currentTime;
+        }
+
+        if (currentTime - lastRightDetection < 5000 && lirikKanan >= 3) {
+          const captureId = v4();
+          capture(captureId, {
+            description: 'Detected glancing to the right.',
+            time: new Date(),
+            image_id: captureId
+          });
+          lirikKanan = 0;
+          lastRightDetection = currentTime;
+        }
+
+        lastDetection = currentTime;
+      }
     }
 
     if (faceBlendShapes.categories[15].score > 0.7 && faceBlendShapes.categories[14].score > 0.7) {
-      setMovementDescription('Melirik ke kiri');
-      capture();
+      if (currentTime - lastDetection > 500) {
+        setMovementDescription('Melirik ke kiri');
+        lirikKanan = 0;
+        lirikKiri = lirikKiri + 1;
+        lirikBawah = 0;
+        lirikAtas = 0;
+
+        if (currentTime - lastLeftDetection > 5000) {
+          lirikKiri = 0;
+          lastLeftDetection = currentTime;
+        }
+
+        if (currentTime - lastLeftDetection < 5000 && lirikKiri >= 3) {
+          const captureId = v4();
+          capture(captureId, {
+            description: 'Detected glancing to the left.',
+            time: new Date(),
+            image_id: captureId
+          });
+          lirikKiri = 0;
+          lastLeftDetection = currentTime;
+        }
+
+        lastDetection = currentTime;
+      }
     }
 
     if (
       faceBlendShapes.categories[11].score > 0.82 &&
       faceBlendShapes.categories[12].score > 0.82
     ) {
-      setMovementDescription('Melirik ke bawah');
-      capture();
+      if (currentTime - lastDetection > 500) {
+        setMovementDescription('Melirik ke bawah');
+        lirikKanan = 0;
+        lirikKiri = 0;
+        lirikBawah = lirikBawah + 1;
+        lirikAtas = 0;
+
+        if (currentTime - lastDownDetection > 5000) {
+          lirikBawah = 0;
+          lastDownDetection = currentTime;
+        }
+
+        if (currentTime - lastDownDetection < 5000 && lirikBawah >= 3) {
+          const captureId = v4();
+          capture(captureId, {
+            description: 'Detected glancing down.',
+            time: new Date(),
+            image_id: captureId
+          });
+          lirikBawah = 0;
+          lastDownDetection = currentTime;
+        }
+
+        lastDetection = currentTime;
+      }
     }
 
     if (faceBlendShapes.categories[17].score > 0.2 && faceBlendShapes.categories[18].score > 0.2) {
-      setMovementDescription('Melirik ke atas');
-      capture();
+      if (currentTime - lastDetection > 500) {
+        setMovementDescription('Melirik ke atas');
+        lirikKanan = 0;
+        lirikKiri = 0;
+        lirikBawah = 0;
+        lirikAtas = lirikAtas + 1;
+
+        if (currentTime - lastTopDetection > 5000) {
+          lirikAtas = 0;
+          lastTopDetection = currentTime;
+        }
+
+        if (currentTime - lastTopDetection < 5000 && lirikAtas >= 3) {
+          const captureId = v4();
+          capture(captureId, {
+            description: 'Detected glancing up.',
+            time: new Date(),
+            image_id: captureId
+          });
+          lirikAtas = 0;
+          lastTopDetection = currentTime;
+        }
+
+        lastDetection = currentTime;
+      }
     }
   };
 
@@ -148,12 +253,24 @@ export default function ExamStartPage() {
       setCameraAlertDialogDesc('');
       return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
     } else if (banyakOrang > 1) {
+      const imageId = v4();
+      capture(imageId, {
+        description: `${banyakOrang} people were detected.`,
+        time: new Date(),
+        image_id: imageId
+      });
       setCameraAlert(true);
       setCameraAlertDialogDesc(
         `${banyakOrang} people were detected. 'The exam cannot continue if there are more than one people detected on camera because proctoring is active on this exam.'`
       );
       return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
     } else {
+      const imageId = v4();
+      capture(imageId, {
+        description: `The examinee was not detected.`,
+        time: new Date(),
+        image_id: imageId
+      });
       setCameraAlert(true);
       setCameraAlertDialogDesc(
         'The exam cannot continue if you are not detected on camera because proctoring is active on this exam.'
@@ -223,25 +340,31 @@ export default function ExamStartPage() {
     processFrame().then();
   };
 
-  const saveImage = async (image: any) => {
+  const saveImage = async (image: any, captureId: string) => {
     // @ts-ignore
-    const saveImageResponse = await window.electron.save_image(image);
+    await window.electron.save_image(image, captureId);
   };
 
-  const capture = useCallback(() => {
-    console.log(lastScreenshotTime);
-    if (lastScreenshotTime == null) {
-      lastScreenshotTime = new Date().getTime();
-      const imageSrc = webcamRef.current!.getScreenshot();
-      saveImage(imageSrc).then();
-    } else {
-      if (new Date().getTime() - lastScreenshotTime > 3000) {
-        lastScreenshotTime = new Date().getTime();
+  const capture = useCallback(
+    (captureId: string, captureData: any) => {
+      const currentTime = new Date().getTime();
+
+      if (lastScreenshotTime == null) {
+        lastScreenshotTime = currentTime;
         const imageSrc = webcamRef.current!.getScreenshot();
-        saveImage(imageSrc).then();
+        setProctoringLog((prev: any) => [...prev, captureData]);
+        saveImage(imageSrc, captureId).then();
+      } else {
+        if (new Date().getTime() - lastScreenshotTime > 3000) {
+          lastScreenshotTime = currentTime;
+          const imageSrc = webcamRef.current!.getScreenshot();
+          setProctoringLog((prev: any) => [...prev, captureData]);
+          saveImage(imageSrc, captureId).then();
+        }
       }
-    }
-  }, [webcamRef]);
+    },
+    [webcamRef]
+  );
 
   useEffect(() => {
     createFaceLandmarker().then();
@@ -281,6 +404,11 @@ export default function ExamStartPage() {
   const handleSubmitExam = async () => {
     // @ts-ignore
     await window.electron.store.save('answers', selectedAnswers);
+
+    console.log(proctoringLog);
+
+    // @ts-ignore
+    await window.electron.store.save('proctoring_log', proctoringLog);
 
     if (examData.enable_review) {
       navigate('/exam-review');
