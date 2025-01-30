@@ -1,7 +1,7 @@
 {
   "appId" : "com.gabrielhtg.honestest",
-  "files" :["dist-electron", "dist-react", "7z-linux", "7z-win"],
-  "extraResources" :["dist-electron/preload.cjs", "logo.png"],
+  "files" :["dist-electron", "dist-react"],
+  "extraResources" :["dist-electron/preload.cjs", "logo.png", "7z-linux", "7z-win", "temp_exam_result"],
   "icon": "./logo.png",
   "mac": {
     "target" : "dmg"

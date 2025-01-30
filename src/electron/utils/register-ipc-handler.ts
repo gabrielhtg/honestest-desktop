@@ -33,7 +33,7 @@ export function registerIpcHandler(mainWindow: any) {
 
   ipcMain.handle('save_image', async (event, base64Data, id: string) => {
     try {
-      const outputPath = path.join(app.getAppPath(), 'temp_exam_result');
+      const outputPath = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
 
       if (!fs.existsSync(outputPath)) {
         fs.mkdirSync(outputPath, { recursive: true });
@@ -85,11 +85,12 @@ export function registerIpcHandler(mainWindow: any) {
       const jsonData = JSON.parse(data);
 
       let archiverDirectory: string;
+      let folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
 
       if (os.platform() === 'win32') {
-        archiverDirectory = path.join(app.getAppPath(), '..', '7z-win', '7zr');
+        archiverDirectory = path.join(app.getAppPath(), '7z-win', '7zr');
       } else {
-        archiverDirectory = path.join(app.getAppPath(), '7z-linux', '7zz');
+        archiverDirectory = path.join(app.getAppPath(), '..', '7z-linux', '7zz');
       }
 
       // Output directory
@@ -104,8 +105,6 @@ export function registerIpcHandler(mainWindow: any) {
         documentsPath,
         `\"${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r\"`
       );
-
-      const folderPath = `${app.getAppPath()}/temp_exam_result`;
 
       fs.writeFileSync(path.join(folderPath, 'data.json'), data);
 
@@ -205,6 +204,13 @@ export function registerIpcHandler(mainWindow: any) {
     return {
       message: 'Exam Mode Activated',
       data: true
+    };
+  });
+
+  ipcMain.handle('get_application_path', async () => {
+    return {
+      message: 'success',
+      data: app.getAppPath()
     };
   });
 }

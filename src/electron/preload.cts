@@ -22,5 +22,6 @@ electron.contextBridge.exposeInMainWorld('electron', {
   save_image: (imageSrc: any, imageId: string) =>
     electron.ipcRenderer.invoke('save_image', imageSrc, imageId),
   create_exam_result_file: (data: any) =>
-    electron.ipcRenderer.invoke('create_exam_result_file', data)
+    electron.ipcRenderer.invoke('create_exam_result_file', data),
+  get_application_path: () => electron.ipcRenderer.invoke('get_application_path')
 });

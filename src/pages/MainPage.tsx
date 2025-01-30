@@ -38,6 +38,8 @@ export function MainPage() {
   const [configPassword, setConfigPassword] = useState<string>('');
   const [passwordErrMessage, setPasswordErrMessage] = useState('');
 
+  const [appPath, setAppPath] = useState('');
+
   const getUserData = async () => {
     // @ts-ignore
     const tempNim = await window.electron.store.get('user-nim');
@@ -45,6 +47,11 @@ export function MainPage() {
     const tempName = await window.electron.store.get('user-name');
     // @ts-ignore
     const tempDeviceID = await window.electron.store.get('device-id');
+
+    // @ts-ignore
+    const temp = await window.electron.get_application_path();
+    console.log(temp);
+    setAppPath(temp.data);
 
     setNim(tempNim.data);
     setName(tempName.data);
@@ -149,6 +156,8 @@ export function MainPage() {
     <div className={'flex flex-col w-screen h-screen items-center justify-center p-10'}>
       <div className={'flex flex-col items-center gap-5 flex-1 justify-center w-full'}>
         <img src={logo} alt="logo" className={'w-48'} />
+
+        <p>{appPath}</p>
 
         <Card>
           <CardContent className={'flex flex-col gap-5 mt-6'}>

@@ -189,6 +189,8 @@ export function ExamWaitingPage() {
       })
     );
 
+    console.log(temp);
+
     const resultFile = new File([temp.data], temp.filename, {
       type: 'application/octet-stream', // Sesuaikan MIME type sesuai kebutuhan
       lastModified: Date.now()
@@ -203,6 +205,7 @@ export function ExamWaitingPage() {
       setBanyakSubmit(banyakSubmit + 1);
       toast.success(submitData.data.message);
     } catch (e: any) {
+      console.log(e);
       toast.error(
         `${e.response.data.message}. You can submit from exam_result file in Documents folder.`
       );
