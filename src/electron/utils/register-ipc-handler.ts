@@ -88,7 +88,7 @@ export function registerIpcHandler(mainWindow: any) {
       let folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
 
       if (os.platform() === 'win32') {
-        archiverDirectory = path.join(app.getAppPath(), '7z-win', '7zr');
+        archiverDirectory = path.join(app.getAppPath(), '7z-win', '7zr.exe');
       } else {
         archiverDirectory = path.join(app.getAppPath(), '..', '7z-linux', '7zz');
       }
