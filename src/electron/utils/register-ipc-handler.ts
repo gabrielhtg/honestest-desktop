@@ -5,6 +5,8 @@ import { formatDate } from './format-image-date.js';
 import { getBatteryPercentage, isCharging } from './system-information.js';
 import { isDev } from './check-dev.js';
 import { exec } from 'child_process';
+import util from 'node:util';
+import os from 'node:os';
 
 export function registerIpcHandler(mainWindow: any) {
   ipcMain.handle('stop_exam_mode', async () => {
@@ -77,10 +79,18 @@ export function registerIpcHandler(mainWindow: any) {
   });
 
   ipcMain.handle('create_exam_result_file', async (event, data: any) => {
+    const execPromise = util.promisify(exec);
+
     try {
       const jsonData = JSON.parse(data);
 
-      const archiverDirectory = path.join(app.getAppPath(), '7z-linux', '7zz');
+      let archiverDirectory: string;
+
+      if (os.platform() === 'win32') {
+        archiverDirectory = path.join(app.getAppPath(), '..', '7z-win', '7zr');
+      } else {
+        archiverDirectory = path.join(app.getAppPath(), '7z-linux', '7zz');
+      }
 
       // Output directory
       const documentsPath = path.join(app.getPath('documents'), 'honestest', 'exam_results');
@@ -99,15 +109,25 @@ export function registerIpcHandler(mainWindow: any) {
 
       fs.writeFileSync(path.join(folderPath, 'data.json'), data);
 
-      exec(`${archiverDirectory} a ${zipFilePath} ${path.join(folderPath, '*')} -ptest -mhe`);
+      try {
+        await execPromise(
+          `${archiverDirectory} a ${zipFilePath} ${path.join(folderPath, '*')} -ptest -mhe`
+        );
 
-      // console.log(
-      //   `${archiverDirectory} a ${zipFilePath} ${app.getAppPath()}/${folderPath} -ptest -mhe`
-      // );
+        const resultFile = fs.readFileSync(zipFilePath.replaceAll('"', ''));
+
+        return {
+          message: 'success',
+          data: resultFile,
+          filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`
+        };
+      } catch (e: any) {
+        console.log(e);
+      }
 
       return {
         message: 'success',
-        data: zipFilePath
+        data: null
       };
     } catch (error: any) {
       console.error('Error creating zip:', error);

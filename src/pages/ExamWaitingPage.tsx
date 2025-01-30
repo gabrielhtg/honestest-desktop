@@ -178,14 +178,8 @@ export function ExamWaitingPage() {
   }, [faceLandmarker]);
 
   const handleSubmitExam = async () => {
-    // const tempResult: any[] = [];
-
-    // for (let i = 0; i < examResultData.length; i++) {
-    //   tempResult.push();
-    // }
-
     //@ts-ignore
-    await window.electron.create_exam_result_file(
+    const temp = await window.electron.create_exam_result_file(
       JSON.stringify({
         username: nim,
         exam: examData,
@@ -195,20 +189,23 @@ export function ExamWaitingPage() {
       })
     );
 
-    try {
-      for (let i = 0; i < examResultData.length; i++) {
-        const submitData = await axios.post(`${apiUrl}/exam/submit`, {
-          username: nim,
-          exam: examData,
-          answer: examResultData[i].answers,
-          questions: questionData
-        });
+    const resultFile = new File([temp.data], temp.filename, {
+      type: 'application/octet-stream', // Sesuaikan MIME type sesuai kebutuhan
+      lastModified: Date.now()
+    });
 
-        toast.success(submitData.data.message);
-        setBanyakSubmit(banyakSubmit + 1);
-      }
+    const formData = new FormData();
+
+    formData.append('result_file', resultFile);
+
+    try {
+      const submitData = await axios.post(`${apiUrl}/exam/submit`, formData);
+      setBanyakSubmit(banyakSubmit + 1);
+      toast.success(submitData.data.message);
     } catch (e: any) {
-      toast.error(e.response.message);
+      toast.error(
+        `${e.response.data.message}. You can submit from exam_result file in Documents folder.`
+      );
     }
   };
 

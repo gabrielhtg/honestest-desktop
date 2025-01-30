@@ -1,10 +1,6 @@
 {
   "appId" : "com.gabrielhtg.honestest",
-  "files" :["dist-electron", {
-    "from": "dist-react",
-    "to": "dist-react",
-    "filter": ["**/*"]
-  }],
+  "files" :["dist-electron", "dist-react", "7z-linux", "7z-win"],
   "extraResources" :["dist-electron/preload.cjs", "logo.png"],
   "icon": "./logo.png",
   "mac": {

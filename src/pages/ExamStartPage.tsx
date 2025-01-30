@@ -743,6 +743,7 @@ export default function ExamStartPage() {
             <Webcam
               ref={webcamRef}
               mirrored={true}
+              screenshotQuality={1}
               screenshotFormat={'image/jpeg'}
               // className={'hidden'}
             />
