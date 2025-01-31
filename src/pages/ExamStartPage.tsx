@@ -386,6 +386,86 @@ export default function ExamStartPage() {
     }
   }, [faceLandmarker]);
 
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      console.log('Tombol yang ditekan:', event.key);
+
+      // Contoh: Deteksi tombol tertentu
+      if (event.ctrlKey && event.key === 'c') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + C keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.altKey && event.key === 'Tab') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + Tab keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.ctrlKey && event.key === 'r') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + R keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.ctrlKey && event.key === 'p') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + P keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.altKey && event.shiftKey && event.key === 'Tab') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + SHIFT + Tab keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.metaKey && event.key === 'd') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the META + D keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.ctrlKey && event.shiftKey && event.key === 'Delete') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + SHIFT + Delete keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.metaKey && event.key === 'r') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the META + R keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.ctrlKey && event.key === 'v') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + V keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      }
+    };
+
+    // Tambahkan event listener ke window
+    window.addEventListener('keydown', handleKeyPress);
+
+    // Bersihkan event listener saat komponen di-unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, []);
+
   const getExamData = async () => {
     // @ts-ignore
     const tempExamData = await window.electron.store.get('exam-data');
