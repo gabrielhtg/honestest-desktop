@@ -87,10 +87,18 @@ export function registerIpcHandler(mainWindow: any) {
       let archiverDirectory: string;
       let folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
 
-      if (os.platform() === 'win32') {
-        archiverDirectory = path.join(app.getAppPath(), '7z-win', '7zr.exe');
+      if (isDev()) {
+        if (os.platform() === 'win32') {
+          archiverDirectory = path.join(app.getAppPath(), '7z-win', '7zr.exe');
+        } else {
+          archiverDirectory = path.join(app.getAppPath(), '7z-linux', '7zz');
+        }
       } else {
-        archiverDirectory = path.join(app.getAppPath(), '..', '7z-linux', '7zz');
+        if (os.platform() === 'win32') {
+          archiverDirectory = path.join(app.getAppPath(), '7z-win', '7zr.exe');
+        } else {
+          archiverDirectory = path.join(app.getAppPath(), '..', '7z-linux', '7zz');
+        }
       }
 
       // Output directory
@@ -103,14 +111,14 @@ export function registerIpcHandler(mainWindow: any) {
       // tempat zip disimpan di documents/honestest
       const zipFilePath = path.join(
         documentsPath,
-        `\"${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r\"`
+        `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`
       );
 
       fs.writeFileSync(path.join(folderPath, 'data.json'), data);
 
       try {
         await execPromise(
-          `${archiverDirectory} a ${zipFilePath} ${path.join(folderPath, '*')} -ptest -mhe`
+          `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -ptest -mhe`
         );
 
         const resultFile = fs.readFileSync(zipFilePath.replaceAll('"', ''));
