@@ -188,14 +188,14 @@ export function registerIpcHandler(mainWindow: any) {
     killWindowsApp('Lightshot.exe');
 
     if (!isDev()) {
-      // mainWindow.setAlwaysOnTop(true, 'screen-saver');
-      // mainWindow.on('blur', () => {
-      //   mainWindow.focus();
-      // });
-      // mainWindow.on('close', (event) => {
-      //   event.preventDefault(); // Mencegah jendela tertutup
-      //   console.log('Alt+F4 atau close dicegah!');
-      // });
+      mainWindow.setAlwaysOnTop(true, 'screen-saver');
+      mainWindow.on('blur', () => {
+        mainWindow.focus();
+      });
+      mainWindow.on('close', (event: any) => {
+        event.preventDefault(); // Mencegah jendela tertutup
+        console.log('Alt+F4 atau close dicegah!');
+      });
     }
 
     // matikan ini jika sedang development
