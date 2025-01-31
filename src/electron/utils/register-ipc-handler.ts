@@ -7,6 +7,7 @@ import { isDev } from './check-dev.js';
 import { exec } from 'child_process';
 import util from 'node:util';
 import os from 'node:os';
+import { killWindowsApp } from './kill-app-windows.js';
 
 export function registerIpcHandler(mainWindow: any) {
   ipcMain.handle('stop_exam_mode', async () => {
@@ -166,25 +167,25 @@ export function registerIpcHandler(mainWindow: any) {
     // killLinuxApp('zoom');
 
     // kill windows app
-    // killWindowsApp('Telegram.exe');
-    // killWindowsApp('Discord.exe');
-    // killWindowsApp('chrome.exe');
-    // killWindowsApp('msedge.exe');
-    // killWindowsApp('WhatsApp.exe');
-    // killWindowsApp('TeamViewer_Service.exe');
-    // killWindowsApp('flameshot.exe');
-    // killWindowsApp('kdeconnect-indicator.exe');
-    // killWindowsApp('kdeconnectd.exe');
-    // killWindowsApp('brave.exe');
-    // killWindowsApp('Zoom.exe');
-    // killWindowsApp('Notepad.exe');
-    // killWindowsApp('AvastBrowser.exe');
-    // killWindowsApp('firefox.exe');
-    // killWindowsApp('opera.exe');
-    // killWindowsApp('opera_autoupdate.exe');
-    // killWindowsApp('obs64.exe');
-    // killWindowsApp('Spotify.exe');
-    // killWindowsApp('Lightshot.exe');
+    killWindowsApp('Telegram.exe');
+    killWindowsApp('Discord.exe');
+    killWindowsApp('chrome.exe');
+    killWindowsApp('msedge.exe');
+    killWindowsApp('WhatsApp.exe');
+    killWindowsApp('TeamViewer_Service.exe');
+    killWindowsApp('flameshot.exe');
+    killWindowsApp('kdeconnect-indicator.exe');
+    killWindowsApp('kdeconnectd.exe');
+    killWindowsApp('brave.exe');
+    killWindowsApp('Zoom.exe');
+    killWindowsApp('Notepad.exe');
+    killWindowsApp('AvastBrowser.exe');
+    killWindowsApp('firefox.exe');
+    killWindowsApp('opera.exe');
+    killWindowsApp('opera_autoupdate.exe');
+    killWindowsApp('obs64.exe');
+    killWindowsApp('Spotify.exe');
+    killWindowsApp('Lightshot.exe');
 
     if (!isDev()) {
       // mainWindow.setAlwaysOnTop(true, 'screen-saver');
@@ -198,14 +199,14 @@ export function registerIpcHandler(mainWindow: any) {
     }
 
     // matikan ini jika sedang development
-    // mainWindow.webContents.on('before-input-event', (event, input) => {
-    //   if (input.control && input.key.toLowerCase() === 'i') {
-    //     event.preventDefault(); // Memblokir Ctrl+I (Developer Tools)
-    //   }
-    //   if (input.key === 'Tab' && input.alt) {
-    //     event.preventDefault(); // Memblokir Alt+Tab
-    //   }
-    // });
+    mainWindow.webContents.on('before-input-event', (event: any, input: any) => {
+      if (input.control && input.key.toLowerCase() === 'i') {
+        event.preventDefault(); // Memblokir Ctrl+I (Developer Tools)
+      }
+      if (input.key === 'Tab' && input.alt) {
+        event.preventDefault(); // Memblokir Alt+Tab
+      }
+    });
 
     return {
       message: 'Exam Mode Activated',

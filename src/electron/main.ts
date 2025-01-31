@@ -42,24 +42,23 @@ app.on('ready', async () => {
     await mainWindow.loadURL('http://localhost:5173');
   } else {
     await mainWindow.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'));
-    // Menu.setApplicationMenu(null);
+    Menu.setApplicationMenu(null);
   }
 
-  // mainWindow.webContents.on('will-navigate', (event) => {
-  //   event.preventDefault();
-  // });
+  mainWindow.webContents.on('will-navigate', (event) => {
+    event.preventDefault();
+  });
 
-  // mainWindow.webContents.on('before-input-event', (event, input) => {
-  //   if (input.type === 'keyDown' && input.key === 'BrowserBack') {
-  //     event.preventDefault();
-  //   }
-  // });
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown' && input.key === 'BrowserBack') {
+      event.preventDefault();
+    }
+  });
 
   dataManagementHandlers();
   decryptExamFile();
   generateCredentialFile();
   showFile();
-  // pollResources();
 
   registerIpcHandler(mainWindow);
 });
@@ -68,14 +67,14 @@ ipcMain.on('app-exit', () => {
   app.quit();
 });
 
-// app.on('browser-window-focus', function () {
-//   globalShortcut.register('CommandOrControl+R', () => {
-//     console.log('CommandOrControl+R is pressed: Shortcut Disabled');
-//   });
-//   globalShortcut.register('F5', () => {
-//     console.log('F5 is pressed: Shortcut Disabled');
-//   });
-// });
+app.on('browser-window-focus', function () {
+  globalShortcut.register('CommandOrControl+R', () => {
+    console.log('CommandOrControl+R is pressed: Shortcut Disabled');
+  });
+  globalShortcut.register('F5', () => {
+    console.log('F5 is pressed: Shortcut Disabled');
+  });
+});
 
 app.on('browser-window-blur', function () {
   globalShortcut.unregister('CommandOrControl+R');

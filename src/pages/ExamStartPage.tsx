@@ -398,10 +398,10 @@ export default function ExamStartPage() {
           time: new Date(),
           image_id: imageId
         });
-      } else if (event.altKey && event.key === 'Tab') {
+      } else if (event.altKey) {
         const imageId = v4();
         capture(imageId, {
-          description: `The examinee presses the CTRL + Tab keys which should not be necessary.`,
+          description: `The examinee presses the Alt combination keys which should not be necessary.`,
           time: new Date(),
           image_id: imageId
         });
@@ -419,17 +419,10 @@ export default function ExamStartPage() {
           time: new Date(),
           image_id: imageId
         });
-      } else if (event.altKey && event.shiftKey && event.key === 'Tab') {
+      } else if (event.metaKey) {
         const imageId = v4();
         capture(imageId, {
-          description: `The examinee presses the CTRL + SHIFT + Tab keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      } else if (event.metaKey && event.key === 'd') {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the META + D keys which should not be necessary.`,
+          description: `The examinee presses the META combination keys which should not be necessary.`,
           time: new Date(),
           image_id: imageId
         });
@@ -437,13 +430,6 @@ export default function ExamStartPage() {
         const imageId = v4();
         capture(imageId, {
           description: `The examinee presses the CTRL + SHIFT + Delete keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      } else if (event.metaKey && event.key === 'r') {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the META + R keys which should not be necessary.`,
           time: new Date(),
           image_id: imageId
         });
