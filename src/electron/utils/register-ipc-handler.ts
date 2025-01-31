@@ -80,13 +80,14 @@ export function registerIpcHandler(mainWindow: any) {
 
   ipcMain.handle('create_exam_result_file', async (event, data: any) => {
     const execPromise = util.promisify(exec);
+    const jsonData = JSON.parse(data);
+    let archiverDirectory: string;
+    let folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
+    const documentsPath = path.join(app.getPath('documents'), 'honestest', 'exam_results');
+    let zipFilePath: string;
+    let resultFile: any;
 
     try {
-      const jsonData = JSON.parse(data);
-
-      let archiverDirectory: string;
-      let folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
-
       if (isDev()) {
         if (os.platform() === 'win32') {
           archiverDirectory = path.join(app.getAppPath(), '7z-win', '7zr.exe');
@@ -95,21 +96,18 @@ export function registerIpcHandler(mainWindow: any) {
         }
       } else {
         if (os.platform() === 'win32') {
-          archiverDirectory = path.join(app.getAppPath(), '7z-win', '7zr.exe');
+          archiverDirectory = path.join(app.getAppPath(), '..', '7z-win', '7zr.exe');
         } else {
           archiverDirectory = path.join(app.getAppPath(), '..', '7z-linux', '7zz');
         }
       }
-
-      // Output directory
-      const documentsPath = path.join(app.getPath('documents'), 'honestest', 'exam_results');
 
       if (!fs.existsSync(documentsPath)) {
         fs.mkdirSync(documentsPath, { recursive: true });
       }
 
       // tempat zip disimpan di documents/honestest
-      const zipFilePath = path.join(
+      zipFilePath = path.join(
         documentsPath,
         `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`
       );
@@ -121,21 +119,21 @@ export function registerIpcHandler(mainWindow: any) {
           `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -ptest -mhe`
         );
 
-        const resultFile = fs.readFileSync(zipFilePath.replaceAll('"', ''));
+        resultFile = fs.readFileSync(zipFilePath.replaceAll('"', ''));
 
         return {
           message: 'success',
           data: resultFile,
-          filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`
+          filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`,
+          temp: `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -ptest -mhe`
         };
       } catch (e: any) {
-        console.log(e);
+        return {
+          message: 'failed',
+          filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`,
+          temp: `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -ptest -mhe`
+        };
       }
-
-      return {
-        message: 'success',
-        data: null
-      };
     } catch (error: any) {
       console.error('Error creating zip:', error);
       return {
