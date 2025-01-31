@@ -45,30 +45,12 @@ app.on('ready', async () => {
     event.preventDefault();
   });
 
-  mainWindow.webContents.on('before-input-event', (event, input) => {
-    if (input.type === 'keyDown' && input.key === 'BrowserBack') {
-      event.preventDefault();
-    }
-  });
-
   dataManagementHandlers();
   decryptExamFile();
   generateCredentialFile();
   showFile();
 
   registerIpcHandler(mainWindow);
-
-  globalShortcut.register('PrintScreen', () => {
-    console.log('Print Screen diblokir');
-  });
-
-  globalShortcut.register('Alt+PrintScreen', () => {
-    console.log('Alt + Print Screen diblokir');
-  });
-
-  globalShortcut.register('CommandOrControl+Shift+S', () => {
-    console.log('Win + Shift + S diblokir');
-  });
 });
 
 ipcMain.on('app-exit', () => {
@@ -82,6 +64,15 @@ app.on('browser-window-focus', function () {
   globalShortcut.register('F5', () => {
     console.log('F5 is pressed: Shortcut Disabled');
   });
+  globalShortcut.register('Alt+Tab', () => {
+    console.log('Alt tab is pressed: Shortcut Disabled');
+  });
+  // globalShortcut.register('Meta', () => {
+  //   console.log('Meta is pressed: Shortcut Disabled');
+  // });
+  // globalShortcut.register('PrintScreen', () => {
+  //   console.log('PrintScreen is pressed: Shortcut Disabled');
+  // });
 });
 
 app.on('browser-window-blur', function () {
