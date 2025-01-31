@@ -1,17 +1,13 @@
-import { app, BrowserWindow, ipcMain, Menu, globalShortcut, desktopCapturer } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, globalShortcut } from 'electron';
 import path from 'node:path';
 import { isDev } from './utils/check-dev.js';
 import { getPreloadPath } from './utils/path-resolver.js';
 import { dataManagementHandlers } from './utils/data-management.js';
 import { decryptExamFile } from './utils/decrypt-exam-file.js';
-import { getBatteryPercentage, isCharging, isVirtualMachine } from './utils/system-information.js';
+import { isVirtualMachine } from './utils/system-information.js';
 import { generateCredentialFile } from './utils/generate-credential-file.js';
-import { killLinuxApp } from './utils/kill-app-linux.js';
-import { killWindowsApp } from './utils/kill-app-windows.js';
 import * as os from 'node:os';
 import { showFile } from './utils/show-file.js';
-import fs from 'node:fs';
-import { formatDate } from './utils/format-image-date.js';
 import { registerIpcHandler } from './utils/register-ipc-handler.js';
 
 let mainWindow: BrowserWindow;
@@ -61,6 +57,18 @@ app.on('ready', async () => {
   showFile();
 
   registerIpcHandler(mainWindow);
+
+  globalShortcut.register('PrintScreen', () => {
+    console.log('Print Screen diblokir');
+  });
+
+  globalShortcut.register('Alt+PrintScreen', () => {
+    console.log('Alt + Print Screen diblokir');
+  });
+
+  globalShortcut.register('CommandOrControl+Shift+S', () => {
+    console.log('Win + Shift + S diblokir');
+  });
 });
 
 ipcMain.on('app-exit', () => {
@@ -79,4 +87,8 @@ app.on('browser-window-focus', function () {
 app.on('browser-window-blur', function () {
   globalShortcut.unregister('CommandOrControl+R');
   globalShortcut.unregister('F5');
+});
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll();
 });
