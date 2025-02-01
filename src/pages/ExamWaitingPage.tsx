@@ -35,6 +35,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { apiUrl } from '@/lib/env.ts';
 import { Toaster } from '@/components/ui/sonner.tsx';
+import { Spinner } from '@/components/custom/Spinner.tsx';
 
 export function ExamWaitingPage() {
   const [examData, setExamData] = useState<any>();
@@ -55,6 +56,7 @@ export function ExamWaitingPage() {
   const [questionData, setQuestionData] = useState([]);
   const [banyakSubmit, setBanyakSubmit] = useState(0);
   const [proctoringLog, setProctoringLog] = useState<any[]>([]);
+  const [showSubmitSpinner, setShowSubmitSpinner] = useState(false)
 
   const handleSubmitExam = async () => {
     //@ts-ignore
@@ -80,9 +82,11 @@ export function ExamWaitingPage() {
     try {
       const submitData = await axios.post(`${apiUrl}/exam/submit`, formData);
       setBanyakSubmit(banyakSubmit + 1);
+      setShowSubmitSpinner(false)
       toast.success(submitData.data.message);
     } catch (e: any) {
       console.log(e);
+      setShowSubmitSpinner(false)
       toast.error(
         `${e.response.data.message}. You can submit from exam_result file in Documents folder.`
       );
@@ -104,6 +108,7 @@ export function ExamWaitingPage() {
     // @ts-ignore
     const tempExamData = await window.electron.store.get('exam-data');
     setExamData(tempExamData.data.examData);
+    console.log(tempExamData);
 
     // @ts-ignore
     const tempResultData = await window.electron.store.get('exam-result');
@@ -279,9 +284,10 @@ export function ExamWaitingPage() {
           {examResultData?.length > 0 && banyakSubmit < examData.allowed_attempts ? (
             <Button
               onClick={() => {
+                setShowSubmitSpinner(true)
                 handleSubmitExam().then();
               }}>
-              <Send /> Submit Exam
+              <Send /> Submit Exam <Spinner show={showSubmitSpinner} className={'text-primary-foreground'}/>
             </Button>
           ) : (
             ''

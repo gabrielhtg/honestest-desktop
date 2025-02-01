@@ -167,25 +167,25 @@ export function registerIpcHandler(mainWindow: any) {
     // killLinuxApp('zoom');
 
     // kill windows app
-    killWindowsApp('Telegram.exe');
-    killWindowsApp('Discord.exe');
-    killWindowsApp('chrome.exe');
-    killWindowsApp('msedge.exe');
-    killWindowsApp('WhatsApp.exe');
-    killWindowsApp('TeamViewer_Service.exe');
-    killWindowsApp('flameshot.exe');
-    killWindowsApp('kdeconnect-indicator.exe');
-    killWindowsApp('kdeconnectd.exe');
-    killWindowsApp('brave.exe');
-    killWindowsApp('Zoom.exe');
-    killWindowsApp('Notepad.exe');
-    killWindowsApp('AvastBrowser.exe');
-    killWindowsApp('firefox.exe');
-    killWindowsApp('opera.exe');
-    killWindowsApp('opera_autoupdate.exe');
-    killWindowsApp('obs64.exe');
-    killWindowsApp('Spotify.exe');
-    killWindowsApp('Lightshot.exe');
+    // killWindowsApp('Telegram.exe');
+    // killWindowsApp('Discord.exe');
+    // killWindowsApp('chrome.exe');
+    // killWindowsApp('msedge.exe');
+    // killWindowsApp('WhatsApp.exe');
+    // killWindowsApp('TeamViewer_Service.exe');
+    // killWindowsApp('flameshot.exe');
+    // killWindowsApp('kdeconnect-indicator.exe');
+    // killWindowsApp('kdeconnectd.exe');
+    // killWindowsApp('brave.exe');
+    // killWindowsApp('Zoom.exe');
+    // killWindowsApp('Notepad.exe');
+    // killWindowsApp('AvastBrowser.exe');
+    // killWindowsApp('firefox.exe');
+    // killWindowsApp('opera.exe');
+    // killWindowsApp('opera_autoupdate.exe');
+    // killWindowsApp('obs64.exe');
+    // killWindowsApp('Spotify.exe');
+    // killWindowsApp('Lightshot.exe');
 
     if (!isDev()) {
       mainWindow.setAlwaysOnTop(true, 'screen-saver');
