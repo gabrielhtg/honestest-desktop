@@ -30,6 +30,7 @@ import {
 import face_recognition_image from '@/assets/face_recognition.png';
 Quill.register('modules/resize', QuillResizeImage);
 import { v4 } from 'uuid';
+import _ from 'lodash';
 
 export default function ExamStartPage() {
   const [examData, setExamData] = useState<any>(null);
@@ -60,8 +61,8 @@ export default function ExamStartPage() {
   const [proctoringLog, setProctoringLog]: any[] = useState<any[]>([]);
 
   // state untuk menyimpan data proctoring
-  const [movementDescription, setMovementDescription] = useState('');
-  const [banyakOrang, setBanyakOrang] = useState('');
+  // const [movementDescription, setMovementDescription] = useState('');
+  // const [banyakOrang, setBanyakOrang] = useState('');
 
   // state untuk exam behaviour
   const [hoursLimit, setHoursLimit] = useState<number>();
@@ -133,7 +134,7 @@ export default function ExamStartPage() {
 
     if (faceBlendShapes.categories[16].score > 0.7 && faceBlendShapes.categories[13].score > 0.7) {
       if (currentTime - lastDetection > 500) {
-        setMovementDescription('Melirik ke kanan');
+        // setMovementDescription('Melirik ke kanan');
         lirikKanan = lirikKanan + 1;
         lirikKiri = 0;
         lirikBawah = 0;
@@ -161,7 +162,7 @@ export default function ExamStartPage() {
 
     if (faceBlendShapes.categories[15].score > 0.7 && faceBlendShapes.categories[14].score > 0.7) {
       if (currentTime - lastDetection > 500) {
-        setMovementDescription('Melirik ke kiri');
+        // setMovementDescription('Melirik ke kiri');
         lirikKanan = 0;
         lirikKiri = lirikKiri + 1;
         lirikBawah = 0;
@@ -192,7 +193,7 @@ export default function ExamStartPage() {
       faceBlendShapes.categories[12].score > 0.82
     ) {
       if (currentTime - lastDetection > 500) {
-        setMovementDescription('Melirik ke bawah');
+        // setMovementDescription('Melirik ke bawah');
         lirikKanan = 0;
         lirikKiri = 0;
         lirikBawah = lirikBawah + 1;
@@ -220,7 +221,7 @@ export default function ExamStartPage() {
 
     if (faceBlendShapes.categories[17].score > 0.2 && faceBlendShapes.categories[18].score > 0.2) {
       if (currentTime - lastDetection > 500) {
-        setMovementDescription('Melirik ke atas');
+        // setMovementDescription('Melirik ke atas');
         lirikKanan = 0;
         lirikKiri = 0;
         lirikBawah = 0;
@@ -295,7 +296,9 @@ export default function ExamStartPage() {
       const results = faceLandmarker.detectForVideo(video, startTimeMs);
 
       // mengembalikan message banyak orang terdeteksi.
-      setBanyakOrang(getBanyakOrangMessage(results.faceLandmarks.length));
+      // setBanyakOrang(getBanyakOrangMessage(results.faceLandmarks.length));
+
+      getBanyakOrangMessage(results.faceLandmarks.length)
 
       if (results.faceLandmarks) {
         // results.faceLandmarks.forEach((landmarks: any) => {
@@ -456,9 +459,35 @@ export default function ExamStartPage() {
     // @ts-ignore
     const tempExamData = await window.electron.store.get('exam-data');
     setExamData(tempExamData.data.examData);
-    setQuestions(tempExamData.data.questionsData);
+
+    let tempQuestion = tempExamData.data.questionsData
+
+    if (tempExamData.data.examData.shuffle_questions) {
+      tempQuestion = _.shuffle(tempExamData.data.questionsData)
+      setQuestions(tempQuestion)
+      setSelectedQuestion({
+        question: tempQuestion[0],
+        number: 0
+      });
+    }
+    // else {
+    //   setQuestions(tempExamData.data.questionsData)
+    //   setSelectedQuestion({
+    //     question: tempExamData.data.questionsData[0],
+    //     number: 0
+    //   });
+    // }
+
+    if (tempExamData.data.examData.shuffle_options) {
+      tempQuestion = tempQuestion.map((question: any) => ({
+        ...question,
+        options: _.shuffle(question.options),
+      }));
+    }
+
+    setQuestions(tempQuestion)
     setSelectedQuestion({
-      question: tempExamData.data.questionsData[0],
+      question: tempQuestion[0],
       number: 0
     });
 
