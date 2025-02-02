@@ -806,17 +806,10 @@ export default function ExamStartPage() {
 
           {/*sebelah kanan*/}
           <div className={'max-w-xs w-full flex flex-col gap-5'}>
-            <Webcam
-              ref={webcamRef}
-              mirrored={true}
-              screenshotQuality={1}
-              screenshotFormat={'image/jpeg'}
-              // className={'hidden'}
-            />
-            <div>
-              <span>{movementDescription}</span> <br />
-              <span>{banyakOrang}</span>
-            </div>
+            {/*<div>*/}
+            {/*  <span>{movementDescription}</span> <br />*/}
+            {/*  <span>{banyakOrang}</span>*/}
+            {/*</div>*/}
             <div className={'border rounded-lg p-5 flex flex-col'}>
               <span className={'font-bold mb-5'}>Question List</span>
 
@@ -884,6 +877,15 @@ export default function ExamStartPage() {
                 </Button>
               </div>
             </div>
+
+            <Webcam
+              className={'opacity-0'}
+              ref={webcamRef}
+              mirrored={true}
+              screenshotQuality={1}
+              screenshotFormat={'image/jpeg'}
+              // className={'hidden'}
+            />
           </div>
         </div>
       </div>
