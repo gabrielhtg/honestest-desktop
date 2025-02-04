@@ -23,5 +23,6 @@ electron.contextBridge.exposeInMainWorld('electron', {
     electron.ipcRenderer.invoke('save_image', imageSrc, imageId),
   create_exam_result_file: (data: any) =>
     electron.ipcRenderer.invoke('create_exam_result_file', data),
-  get_application_path: () => electron.ipcRenderer.invoke('get_application_path')
+  get_application_path: () => electron.ipcRenderer.invoke('get_application_path'),
+  onMessage: (callback: any) => electron.ipcRenderer.on('window-change', (_: any, message: any) => callback(message))
 });

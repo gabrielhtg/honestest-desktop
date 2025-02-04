@@ -516,6 +516,23 @@ export default function ExamStartPage() {
     getExamData().then();
   }, []);
 
+  useEffect(() => {
+    // @ts-ignore
+    if (window.electron) {
+      // @ts-ignore
+      window.electron.onMessage((msg: string) => {
+        const jsonData = JSON.parse(msg)
+
+        setProctoringLog((prev: any) => [...prev, {
+            description: jsonData.message,
+            time: jsonData.time,
+            image_id: jsonData.id
+          }]
+        )
+      });
+    }
+  }, []);
+
   return (
     <div title="Configure Exam">
       <div id={'card-utama'} className={'w-full p-10 h-[calc(100vh-57px)]'}>

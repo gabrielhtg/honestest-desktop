@@ -6,8 +6,8 @@ import { getBatteryPercentage, isCharging } from './system-information.js';
 import { isDev } from './check-dev.js';
 import { exec } from 'child_process';
 import util from 'node:util';
+import { v4 } from 'uuid';
 import os from 'node:os';
-import { killWindowsApp } from './kill-app-windows.js';
 
 export function registerIpcHandler(mainWindow: any) {
   ipcMain.handle('stop_exam_mode', async () => {
@@ -49,7 +49,7 @@ export function registerIpcHandler(mainWindow: any) {
           }
         })
         .then((sources: any) => {
-          let image = sources[0].thumbnail.toDataURL();
+          const image: any = sources[0].thumbnail.toDataURL();
 
           fs.writeFileSync(
             path.join(outputPath, `s_${id}.png`),
@@ -83,7 +83,7 @@ export function registerIpcHandler(mainWindow: any) {
     const execPromise = util.promisify(exec);
     const jsonData = JSON.parse(data);
     let archiverDirectory: string;
-    let folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
+    const folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
     const documentsPath = path.join(app.getPath('documents'), 'honestest', 'exam_results');
     let zipFilePath: string;
     let resultFile: any;
@@ -129,6 +129,7 @@ export function registerIpcHandler(mainWindow: any) {
           temp: `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -ptest -mhe`
         };
       } catch (e: any) {
+        console.log(e);
         return {
           message: 'failed',
           filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`,
@@ -158,45 +159,80 @@ export function registerIpcHandler(mainWindow: any) {
       mainWindow.setMinimizable(false);
     }
 
-    // kill linux app
-    // killLinuxApp('telegram');
-    // killLinuxApp('Discord');
-    // killLinuxApp('firefox-bin');
-    // killLinuxApp('chrome');
-    // killLinuxApp('obs');
-    // killLinuxApp('zoom');
+    // const killApps = () => {
+      // kill linux app
+      // killLinuxApp('telegram');
+      // killLinuxApp('Discord');
+      // killLinuxApp('firefox-bin');
+      // killLinuxApp('chrome');
+      // killLinuxApp('obs');
+      // killLinuxApp('zoom');
 
-    // kill windows app
-    // killWindowsApp('Telegram.exe');
-    // killWindowsApp('Discord.exe');
-    // killWindowsApp('chrome.exe');
-    // killWindowsApp('msedge.exe');
-    // killWindowsApp('WhatsApp.exe');
-    // killWindowsApp('TeamViewer_Service.exe');
-    // killWindowsApp('flameshot.exe');
-    // killWindowsApp('kdeconnect-indicator.exe');
-    // killWindowsApp('kdeconnectd.exe');
-    // killWindowsApp('brave.exe');
-    // killWindowsApp('Zoom.exe');
-    // killWindowsApp('Notepad.exe');
-    // killWindowsApp('AvastBrowser.exe');
-    // killWindowsApp('firefox.exe');
-    // killWindowsApp('opera.exe');
-    // killWindowsApp('opera_autoupdate.exe');
-    // killWindowsApp('obs64.exe');
-    // killWindowsApp('Spotify.exe');
-    // killWindowsApp('Lightshot.exe');
+      // kill windows app
+      // killWindowsApp('Telegram.exe');
+      // killWindowsApp('Discord.exe');
+      // killWindowsApp('chrome.exe');
+      // killWindowsApp('msedge.exe');
+      // killWindowsApp('WhatsApp.exe');
+      // killWindowsApp('TeamViewer_Service.exe');
+      // killWindowsApp('flameshot.exe');
+      // killWindowsApp('kdeconnect-indicator.exe');
+      // killWindowsApp('kdeconnectd.exe');
+      // killWindowsApp('brave.exe');
+      // killWindowsApp('Zoom.exe');
+      // killWindowsApp('Notepad.exe');
+      // killWindowsApp('AvastBrowser.exe');
+      // killWindowsApp('firefox.exe');
+      // killWindowsApp('opera.exe');
+      // killWindowsApp('opera_autoupdate.exe');
+      // killWindowsApp('obs64.exe');
+      // killWindowsApp('Spotify.exe');
+      // killWindowsApp('Lightshot.exe');
+    // };
 
-    if (!isDev()) {
+    // killApps();
+
+    // const intervalId = setInterval(killApps, 30 * 1000);
+
+    // mainWindow.on('close', () => {
+    //   clearInterval(intervalId); // Hentikan interval saat jendela ditutup
+    // });
+
+    // if (!isDev()) {
       mainWindow.setAlwaysOnTop(true, 'screen-saver');
-      mainWindow.on('blur', () => {
+      mainWindow.on('blur', async  () => {
+        const uuid = v4()
+        mainWindow.webContents.send('window-change', JSON.stringify({
+          message: 'The examinee was detected changing window.',
+          id : uuid,
+          time: new Date()
+        }));
+
+        await desktopCapturer
+          .getSources({
+            types: ['screen'],
+            thumbnailSize: {
+              width: 1920,
+              height: 1080
+            }
+          })
+          .then((sources: any) => {
+            const image: any = sources[0].thumbnail.toDataURL();
+            const outputPath = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
+
+            fs.writeFileSync(
+              path.join(outputPath, `s_${uuid}.png`),
+              image.replace(/^data:image\/png;base64,/, ''),
+              'base64'
+            );
+          })
         mainWindow.focus();
       });
       mainWindow.on('close', (event: any) => {
         event.preventDefault(); // Mencegah jendela tertutup
         console.log('Alt+F4 atau close dicegah!');
       });
-    }
+    // }
 
     // matikan ini jika sedang development
     mainWindow.webContents.on('before-input-event', (event: any, input: any) => {
