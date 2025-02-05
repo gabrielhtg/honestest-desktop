@@ -498,12 +498,74 @@ export default function ExamStartPage() {
 
   const handleSubmitExam = async () => {
     // @ts-ignore
+    const tempExamData = await window.electron.store.get('exam-data');
+    // @ts-ignore
+    // const tempAnswers = await window.electron.store.get('answers');
+    const questions = tempExamData.data.questionsData;
+    // @ts-ignore
     await window.electron.store.save('answers', selectedAnswers);
-
-    console.log(proctoringLog);
-
     // @ts-ignore
     await window.electron.store.save('proctoring_log', proctoringLog);
+
+    let tempTotalScore = 0;
+    let tempScore = 0;
+    let correctQuestion: any = {};
+
+    questions.forEach((question: any) => {
+      if (question.type === 'multiple') {
+        question.options.forEach((option: any) => {
+          if (option.id === selectedAnswers[question.id] && option.isCorrect) {
+            tempScore = tempScore + +question.point;
+            correctQuestion = {
+              ...correctQuestion,
+              [question.id]: +question.point
+            };
+          }
+        });
+      } else if (question.type === 'check-box') {
+        question.options.forEach((option: any) => {
+          if (+option.id.split('.')[0] === question.id) {
+            try {
+              selectedAnswers[question.id].forEach((answer: any) => {
+                if (answer === option.id && option.isCorrect) {
+                  tempScore =
+                    tempScore +
+                    (1 / question.options.filter((tmp: any) => tmp.isCorrect).length) *
+                    question.point;
+
+                  correctQuestion = {
+                    ...correctQuestion,
+                    [question.id]:
+                    (correctQuestion[question.id] ? correctQuestion[question.id] : 0) +
+                    (1 / question.options.filter((tmp: any) => tmp.isCorrect).length) *
+                    question.point
+                  };
+                }
+              });
+            } catch (e: any) {
+              console.log(e);
+              return;
+            }
+          }
+        });
+      }
+
+      tempTotalScore = tempTotalScore + +question.point;
+    });
+
+    // @ts-ignore
+    const nim = await window.electron.store.get('user-nim');
+
+    // @ts-ignore
+    await window.electron.store.save('exam-result', [{
+      exam_id: examData.id,
+      user_username: nim,
+      total_score: tempScore,
+      expected_score: tempTotalScore,
+      // attempt: examResultData.length + 1,
+      created_at: new Date(),
+      answers: selectedAnswers
+    }]);
 
     if (examData.enable_review) {
       navigate('/exam-review');

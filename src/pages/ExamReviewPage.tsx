@@ -65,6 +65,7 @@ export default function ExamReviewPage() {
                 }
               });
             } catch (e: any) {
+              console.log(e);
               return;
             }
           }
@@ -92,7 +93,7 @@ export default function ExamReviewPage() {
 
   const handleSubmitExam = async () => {
     // @ts-ignore
-    await window.electron.store.save('exam-result', [examResultData]);
+    // await window.electron.store.save('exam-result', [examResultData]);
     navigate('/exam');
   };
 

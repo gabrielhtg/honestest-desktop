@@ -110,7 +110,7 @@ export function BottomBar() {
           variant={'secondary'}
           onClick={() => {
             setExitPasswordErrMsg('');
-            if (examData.end_password === null) {
+            if (examData.end_password === null || examData.end_password.trim() === '') {
               handleExitExam().then();
             } else {
               setShowDialog(true);
