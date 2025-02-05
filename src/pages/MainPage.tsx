@@ -12,18 +12,12 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog.tsx';
-import { Camera, Copy, Fingerprint, LogOut, Menu, RotateCcw, Save } from 'lucide-react';
+import { Camera, Copy, Fingerprint, LogOut, RotateCcw, Save } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label.tsx';
 import { Link, useNavigate } from 'react-router';
 import { Toaster } from '@/components/ui/sonner.tsx';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu.tsx';
 
 export function MainPage() {
   const [examConfigFile, setExamConfigFile] = useState<File>();
@@ -146,6 +140,7 @@ export function MainPage() {
   const clearAppData = async () => {
     // @ts-ignore
     await window.electron.store.clear();
+    navigate('/');
   };
 
   useEffect(() => {
@@ -298,32 +293,24 @@ export function MainPage() {
           </Link>
         </Button>
 
-        <div className={''}>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant={'outline'}>
-                <Menu />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className={'mr-10'}>
-              <DropdownMenuItem
-                className={'text-red-500'}
-                onClick={() => {
-                  setOpenClearDialog(true);
-                }}>
-                <RotateCcw />
-                Clear App Data
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  setOpenExitDialog(true);
-                }}>
-                <LogOut />
-                Exit App
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        <Button variant={'outline'}
+          className={'text-red-500'}
+          onClick={() => {
+            setOpenClearDialog(true);
+          }}>
+          <RotateCcw />
+          Clear App Data
+        </Button>
 
+        <Button variant={'outline'}
+          onClick={() => {
+            setOpenExitDialog(true);
+          }}>
+          <LogOut />
+          Exit App
+        </Button>
+
+        <div className={''}>
           <Dialog open={openClearDialog} onOpenChange={setOpenClearDialog}>
             <DialogContent>
               <DialogHeader>
@@ -336,7 +323,6 @@ export function MainPage() {
                     <Button
                       onClick={() => {
                         clearAppData().then();
-                        navigate('/');
                       }}>
                       Yes
                     </Button>
