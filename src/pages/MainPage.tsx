@@ -60,11 +60,16 @@ export function MainPage() {
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
+      reader.onerror = (error) => {
+        console.error("Error converting file to base64:", error);
+        reject(error);
+      };
     });
 
   const getExamData = async () => {
-    // @ts-ignore
+    console.log(await toBase64(examConfigFile!));
+
+    //@ts-ignore
     const examData: any = await window.electron.open_config(
       await toBase64(examConfigFile!),
       configPassword

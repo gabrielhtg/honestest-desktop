@@ -370,7 +370,9 @@ export default function ExamStartPage() {
   );
 
   useEffect(() => {
-    createFaceLandmarker().then();
+    if (examData?.enable_proctoring) {
+      createFaceLandmarker().then();
+    }
   }, []);
 
   const handleValueChange = (questionId: number, value: string) => {
@@ -381,78 +383,82 @@ export default function ExamStartPage() {
   };
 
   useEffect(() => {
-    if (faceLandmarker && webcamRef.current) {
-      const video = webcamRef.current.video as HTMLVideoElement;
-      video.addEventListener('loadeddata', () => {
-        predictWebcam().then();
-      });
+    if (examData?.enable_proctoring) {
+      if (faceLandmarker && webcamRef.current) {
+        const video = webcamRef.current.video as HTMLVideoElement;
+        video.addEventListener('loadeddata', () => {
+          predictWebcam().then();
+        });
+      }
     }
   }, [faceLandmarker]);
 
   useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      console.log('Tombol yang ditekan:', event.key);
+    if (examData?.enable_proctoring) {
+      const handleKeyPress = (event: KeyboardEvent) => {
+        console.log('Tombol yang ditekan:', event.key);
 
-      // Contoh: Deteksi tombol tertentu
-      if (event.ctrlKey && event.key === 'c') {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the CTRL + C keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      } else if (event.altKey) {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the Alt combination keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      } else if (event.ctrlKey && event.key === 'r') {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the CTRL + R keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      } else if (event.ctrlKey && event.key === 'p') {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the CTRL + P keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      } else if (event.metaKey) {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the META combination keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      } else if (event.ctrlKey && event.shiftKey && event.key === 'Delete') {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the CTRL + SHIFT + Delete keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      } else if (event.ctrlKey && event.key === 'v') {
-        const imageId = v4();
-        capture(imageId, {
-          description: `The examinee presses the CTRL + V keys which should not be necessary.`,
-          time: new Date(),
-          image_id: imageId
-        });
-      }
-    };
+        // Contoh: Deteksi tombol tertentu
+        if (event.ctrlKey && event.key === 'c') {
+          const imageId = v4();
+          capture(imageId, {
+            description: `The examinee presses the CTRL + C keys which should not be necessary.`,
+            time: new Date(),
+            image_id: imageId
+          });
+        } else if (event.altKey) {
+          const imageId = v4();
+          capture(imageId, {
+            description: `The examinee presses the Alt combination keys which should not be necessary.`,
+            time: new Date(),
+            image_id: imageId
+          });
+        } else if (event.ctrlKey && event.key === 'r') {
+          const imageId = v4();
+          capture(imageId, {
+            description: `The examinee presses the CTRL + R keys which should not be necessary.`,
+            time: new Date(),
+            image_id: imageId
+          });
+        } else if (event.ctrlKey && event.key === 'p') {
+          const imageId = v4();
+          capture(imageId, {
+            description: `The examinee presses the CTRL + P keys which should not be necessary.`,
+            time: new Date(),
+            image_id: imageId
+          });
+        } else if (event.metaKey) {
+          const imageId = v4();
+          capture(imageId, {
+            description: `The examinee presses the META combination keys which should not be necessary.`,
+            time: new Date(),
+            image_id: imageId
+          });
+        } else if (event.ctrlKey && event.shiftKey && event.key === 'Delete') {
+          const imageId = v4();
+          capture(imageId, {
+            description: `The examinee presses the CTRL + SHIFT + Delete keys which should not be necessary.`,
+            time: new Date(),
+            image_id: imageId
+          });
+        } else if (event.ctrlKey && event.key === 'v') {
+          const imageId = v4();
+          capture(imageId, {
+            description: `The examinee presses the CTRL + V keys which should not be necessary.`,
+            time: new Date(),
+            image_id: imageId
+          });
+        }
+      };
 
-    // Tambahkan event listener ke window
-    window.addEventListener('keydown', handleKeyPress);
+      // Tambahkan event listener ke window
+      window.addEventListener('keydown', handleKeyPress);
 
-    // Bersihkan event listener saat komponen di-unmount
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-    };
+      // Bersihkan event listener saat komponen di-unmount
+      return () => {
+        window.removeEventListener('keydown', handleKeyPress);
+      };
+    }
   }, []);
 
   const getExamData = async () => {
@@ -579,20 +585,22 @@ export default function ExamStartPage() {
   }, []);
 
   useEffect(() => {
-    // @ts-ignore
-    if (window.electron) {
-      // @ts-ignore
-      window.electron.onMessage((msg: string) => {
-        const jsonData = JSON.parse(msg)
+   if (examData?.enable_proctoring) {
+     // @ts-ignore
+     if (window.electron) {
+       // @ts-ignore
+       window.electron.onMessage((msg: string) => {
+         const jsonData = JSON.parse(msg)
 
-        setProctoringLog((prev: any) => [...prev, {
-            description: jsonData.message,
-            time: jsonData.time,
-            image_id: jsonData.id
-          }]
-        )
-      });
-    }
+         setProctoringLog((prev: any) => [...prev, {
+             description: jsonData.message,
+             time: jsonData.time,
+             image_id: jsonData.id
+           }]
+         )
+       });
+     }
+   }
   }, []);
 
   return (
@@ -986,14 +994,18 @@ export default function ExamStartPage() {
               </div>
             </div>
 
-            <Webcam
-              className={'opacity-0'}
-              ref={webcamRef}
-              mirrored={true}
-              screenshotQuality={1}
-              screenshotFormat={'image/jpeg'}
-              // className={'hidden'}
-            />
+            {
+              examData?.enable_proctoring ? (
+                <Webcam
+                  className={'opacity-0'}
+                  ref={webcamRef}
+                  mirrored={true}
+                  screenshotQuality={1}
+                  screenshotFormat={'image/jpeg'}
+                  // className={'hidden'}
+                />
+              ) : ('')
+            }
           </div>
         </div>
       </div>

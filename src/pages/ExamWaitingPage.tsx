@@ -254,13 +254,15 @@ export function ExamWaitingPage() {
                       <TableCell>
                         {format(new Date(examResult.created_at), 'EEEE, dd MMMM yyyy, hh:mm a')}
                       </TableCell>
-                      <TableCell>
-                        {examResult.total_score} / {examResult.expected_score}{' '}
-                        <span className={'font-bold'}>
-                          ({((examResult.total_score / examResult.expected_score) * 100).toFixed(2)}
-                          %)
-                        </span>
-                      </TableCell>
+                      <TableCell>{examData?.show_grade ? (
+                        <>
+                          {examResult.total_score} / {examResult.expected_score}{' '}
+                          <span className={'font-bold'}>
+                        ({((examResult.total_score / examResult.expected_score) * 100).toFixed(2)}
+                            %)
+                      </span>
+                        </>
+                      ) : 'Not Permitted'}</TableCell>
                       <TableCell>
                         {examData.enable_review ? (
                           <Link to={`/exam-review`} className={'text-blue-500'}>
@@ -439,7 +441,7 @@ export function ExamWaitingPage() {
             variant={'secondary'}
             onClick={() => {
               setExitPasswordErrMsg('');
-              if (examData.end_password === null) {
+              if (examData.end_password === null || examData.end_password.trim() === '') {
                 handleExitExam().then();
               } else {
                 setShowDialog(true);
