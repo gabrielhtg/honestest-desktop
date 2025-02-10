@@ -94,7 +94,7 @@ export function ExamWaitingPage() {
     } catch (e: any) {
       setShowSubmitSpinner(false)
       toast.error(
-        `${e.response.data.message}. You can submit from exam_result file in Documents folder.`
+        `${e.response.data.message} You can submit from exam_result file in Documents folder.`
       );
     }
   };
