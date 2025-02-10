@@ -239,8 +239,9 @@ export default function ExamReviewPage() {
               <Button
                 onClick={() => {
                   handleSubmitExam().then();
-                }}>
-                Finish Review
+                }}
+              >
+                Done Review
               </Button>
             </div>
           </div>

@@ -58,6 +58,7 @@ export function ExamWaitingPage() {
   const [banyakSubmit, setBanyakSubmit] = useState(0);
   const [proctoringLog, setProctoringLog] = useState<any[]>([]);
   const [showSubmitSpinner, setShowSubmitSpinner] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmitExam = async () => {
     //@ts-ignore
@@ -85,6 +86,10 @@ export function ExamWaitingPage() {
       const submitData = await axios.post(`${apiUrl}/exam/submit`, formData);
       setBanyakSubmit(banyakSubmit + 1);
       setShowSubmitSpinner(false)
+
+      // @ts-ignore
+      window.electron.store.save('submitted', true)
+      setSubmitted(true)
       toast.success(submitData.data.message);
     } catch (e: any) {
       console.log(e);
@@ -111,6 +116,10 @@ export function ExamWaitingPage() {
     const tempExamData = await window.electron.store.get('exam-data');
     setExamData(tempExamData.data.examData);
     console.log(tempExamData);
+
+    // @ts-ignore
+    const tempSubmitted = await window.electron.store.get('submitted')
+    setSubmitted(tempSubmitted.data)
 
     // @ts-ignore
     const tempResultData = await window.electron.store.get('exam-result');
@@ -286,13 +295,15 @@ export function ExamWaitingPage() {
 
         <div className={'flex justify-center gap-3'}>
           {examResultData?.length > 0 && banyakSubmit < examData.allowed_attempts ? (
-            <Button
-              onClick={() => {
-                setShowSubmitSpinner(true)
-                handleSubmitExam().then();
-              }}>
-              <Send /> Submit Exam <Spinner show={showSubmitSpinner} className={'text-primary-foreground'}/>
-            </Button>
+            !submitted ? (
+                <Button
+                  onClick={() => {
+                    setShowSubmitSpinner(true)
+                    handleSubmitExam().then();
+                  }}>
+                  <Send /> Submit Exam <Spinner show={showSubmitSpinner} className={'text-primary-foreground'}/>
+                </Button>
+              ) : ''
           ) : (
             ''
           )}
