@@ -120,7 +120,7 @@ export function registerIpcHandler(mainWindow: any) {
 
       try {
         await execPromise(
-          `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -ptest -mhe`
+          `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -p105a5c33-cc82-41a3-a6b0-09fa535fdc3e -mhe`
         );
 
         resultFile = fs.readFileSync(zipFilePath.replaceAll('"', ''));
@@ -131,14 +131,12 @@ export function registerIpcHandler(mainWindow: any) {
           message: 'success',
           data: resultFile,
           filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`,
-          temp: `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -ptest -mhe`
         };
       } catch (e: any) {
         console.log(e);
         return {
           message: 'failed',
           filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`,
-          temp: `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -ptest -mhe`
         };
       }
     } catch (error: any) {
