@@ -216,24 +216,24 @@ export default function ExamReviewPage() {
               </div>
             </div>
 
-            <div className={'border rounded-lg w-full flex flex-col p-5'}>
-              <span className={'font-bold'}>Status</span>
+            {/*<div className={'border rounded-lg w-full flex flex-col p-5'}>*/}
+            {/*  <span className={'font-bold'}>Status</span>*/}
 
-              {(examResultData?.total_score / examResultData?.expected_score) * 100 >=
-              exam?.passing_grade ? (
-                <div className={'mt-3 text-center w-full text-3xl text-green-500 font-bold'}>
-                  Passed
-                </div>
-              ) : (
-                <div className={'mt-3 text-center w-full text-3xl text-red-400 font-bold'}>
-                  Not Pass
-                </div>
-              )}
+            {/*  {(examResultData?.total_score / examResultData?.expected_score) * 100 >=*/}
+            {/*  exam?.passing_grade ? (*/}
+            {/*    <div className={'mt-3 text-center w-full text-3xl text-green-500 font-bold'}>*/}
+            {/*      Passed*/}
+            {/*    </div>*/}
+            {/*  ) : (*/}
+            {/*    <div className={'mt-3 text-center w-full text-3xl text-red-400 font-bold'}>*/}
+            {/*      Not Pass*/}
+            {/*    </div>*/}
+            {/*  )}*/}
 
-              <div className={'text-center text-muted-foreground mt-2'}>
-                Passing Grade : {exam?.passing_grade}
-              </div>
-            </div>
+            {/*  <div className={'text-center text-muted-foreground mt-2'}>*/}
+            {/*    Passing Grade : {exam?.passing_grade}*/}
+            {/*  </div>*/}
+            {/*</div>*/}
 
             <div className={'flex gap-3'}>
               <Button
