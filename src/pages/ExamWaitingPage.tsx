@@ -33,10 +33,10 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { apiUrl } from '@/lib/env.ts';
 import { Toaster } from '@/components/ui/sonner.tsx';
 import { Spinner } from '@/components/custom/Spinner.tsx';
 import { v4 } from 'uuid';
+import * as process from 'node:process';
 
 export function ExamWaitingPage() {
   const [examData, setExamData] = useState<any>();
@@ -83,7 +83,7 @@ export function ExamWaitingPage() {
     formData.append('result_file', resultFile);
 
     try {
-      const submitData = await axios.post(`${apiUrl}/exam/submit`, formData);
+      const submitData = await axios.post(`${process.env.API_URL}/exam/submit`, formData);
       setBanyakSubmit(banyakSubmit + 1);
       setShowSubmitSpinner(false)
 
