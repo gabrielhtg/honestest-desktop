@@ -298,7 +298,7 @@ export default function ExamStartPage() {
       // mengembalikan message banyak orang terdeteksi.
       // setBanyakOrang(getBanyakOrangMessage(results.faceLandmarks.length));
 
-      getBanyakOrangMessage(results.faceLandmarks.length)
+      getBanyakOrangMessage(results.faceLandmarks.length);
 
       if (results.faceLandmarks) {
         // results.faceLandmarks.forEach((landmarks: any) => {
@@ -336,7 +336,6 @@ export default function ExamStartPage() {
         // detectMovement(results.faceBlendshapes[0]);
       }
 
-      // console.log(results);
       requestAnimationFrame(processFrame);
     };
 
@@ -369,11 +368,11 @@ export default function ExamStartPage() {
     [webcamRef]
   );
 
-  useEffect(() => {
-    if (examData?.enable_proctoring) {
-      createFaceLandmarker().then();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (examData?.enable_proctoring) {
+  //     createFaceLandmarker().then();
+  //   }
+  // }, []);
 
   const handleValueChange = (questionId: number, value: string) => {
     setSelectedAnswers((prev) => ({
@@ -394,83 +393,81 @@ export default function ExamStartPage() {
   }, [faceLandmarker]);
 
   useEffect(() => {
-    if (examData?.enable_proctoring) {
-      const handleKeyPress = (event: KeyboardEvent) => {
-        console.log('Tombol yang ditekan:', event.key);
+    const handleKeyPress = (event: KeyboardEvent) => {
+      console.log('Tombol yang ditekan:', event.key);
 
-        // Contoh: Deteksi tombol tertentu
-        if (event.ctrlKey && event.key === 'c') {
-          const imageId = v4();
-          capture(imageId, {
-            description: `The examinee presses the CTRL + C keys which should not be necessary.`,
-            time: new Date(),
-            image_id: imageId
-          });
-        } else if (event.altKey) {
-          const imageId = v4();
-          capture(imageId, {
-            description: `The examinee presses the Alt combination keys which should not be necessary.`,
-            time: new Date(),
-            image_id: imageId
-          });
-        } else if (event.ctrlKey && event.key === 'r') {
-          const imageId = v4();
-          capture(imageId, {
-            description: `The examinee presses the CTRL + R keys which should not be necessary.`,
-            time: new Date(),
-            image_id: imageId
-          });
-        } else if (event.ctrlKey && event.key === 'p') {
-          const imageId = v4();
-          capture(imageId, {
-            description: `The examinee presses the CTRL + P keys which should not be necessary.`,
-            time: new Date(),
-            image_id: imageId
-          });
-        } else if (event.metaKey) {
-          const imageId = v4();
-          capture(imageId, {
-            description: `The examinee presses the META combination keys which should not be necessary.`,
-            time: new Date(),
-            image_id: imageId
-          });
-        } else if (event.ctrlKey && event.shiftKey && event.key === 'Delete') {
-          const imageId = v4();
-          capture(imageId, {
-            description: `The examinee presses the CTRL + SHIFT + Delete keys which should not be necessary.`,
-            time: new Date(),
-            image_id: imageId
-          });
-        } else if (event.ctrlKey && event.key === 'v') {
-          const imageId = v4();
-          capture(imageId, {
-            description: `The examinee presses the CTRL + V keys which should not be necessary.`,
-            time: new Date(),
-            image_id: imageId
-          });
-        }
-      };
+      // Contoh: Deteksi tombol tertentu
+      if (event.ctrlKey && event.key === 'c') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + C keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.altKey) {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the Alt combination keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.ctrlKey && event.key === 'r') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + R keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.ctrlKey && event.key === 'p') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + P keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.metaKey) {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the META combination keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.ctrlKey && event.shiftKey && event.key === 'Delete') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + SHIFT + Delete keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      } else if (event.ctrlKey && event.key === 'v') {
+        const imageId = v4();
+        capture(imageId, {
+          description: `The examinee presses the CTRL + V keys which should not be necessary.`,
+          time: new Date(),
+          image_id: imageId
+        });
+      }
+    };
 
-      // Tambahkan event listener ke window
-      window.addEventListener('keydown', handleKeyPress);
+    // Tambahkan event listener ke window
+    window.addEventListener('keydown', handleKeyPress);
 
-      // Bersihkan event listener saat komponen di-unmount
-      return () => {
-        window.removeEventListener('keydown', handleKeyPress);
-      };
-    }
-  }, []);
+    // Bersihkan event listener saat komponen di-unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [examData?.enable_proctoring]);
 
   const getExamData = async () => {
     // @ts-ignore
     const tempExamData = await window.electron.store.get('exam-data');
     setExamData(tempExamData.data.examData);
 
-    let tempQuestion = tempExamData.data.questionsData
+    let tempQuestion = tempExamData.data.questionsData;
 
     if (tempExamData.data.examData.shuffle_questions) {
-      tempQuestion = _.shuffle(tempExamData.data.questionsData)
-      setQuestions(tempQuestion)
+      tempQuestion = _.shuffle(tempExamData.data.questionsData);
+      setQuestions(tempQuestion);
       setSelectedQuestion({
         question: tempQuestion[0],
         number: 0
@@ -487,11 +484,11 @@ export default function ExamStartPage() {
     if (tempExamData.data.examData.shuffle_options) {
       tempQuestion = tempQuestion.map((question: any) => ({
         ...question,
-        options: _.shuffle(question.options),
+        options: _.shuffle(question.options)
       }));
     }
 
-    setQuestions(tempQuestion)
+    setQuestions(tempQuestion);
     setSelectedQuestion({
       question: tempQuestion[0],
       number: 0
@@ -500,6 +497,27 @@ export default function ExamStartPage() {
     setHoursLimit(Math.floor(tempExamData.data.examData.time_limit / 3600));
     setMinutesLimit(Math.floor((tempExamData.data.examData.time_limit % 3600) / 60));
     setSecondsLimit(Math.floor((tempExamData.data.examData.time_limit % 3600) % 60));
+
+    if (tempExamData.data.examData.enable_proctoring) {
+      createFaceLandmarker().then();
+
+      // @ts-ignore
+      if (window.electron) {
+        // @ts-ignore
+        window.electron.onMessage((msg: string) => {
+          const jsonData = JSON.parse(msg);
+
+          setProctoringLog((prev: any) => [
+            ...prev,
+            {
+              description: jsonData.message,
+              time: jsonData.time,
+              image_id: jsonData.id
+            }
+          ]);
+        });
+      }
+    }
   };
 
   const handleSubmitExam = async () => {
@@ -537,14 +555,14 @@ export default function ExamStartPage() {
                   tempScore =
                     tempScore +
                     (1 / question.options.filter((tmp: any) => tmp.isCorrect).length) *
-                    question.point;
+                      question.point;
 
                   correctQuestion = {
                     ...correctQuestion,
                     [question.id]:
-                    (correctQuestion[question.id] ? correctQuestion[question.id] : 0) +
-                    (1 / question.options.filter((tmp: any) => tmp.isCorrect).length) *
-                    question.point
+                      (correctQuestion[question.id] ? correctQuestion[question.id] : 0) +
+                      (1 / question.options.filter((tmp: any) => tmp.isCorrect).length) *
+                        question.point
                   };
                 }
               });
@@ -563,15 +581,17 @@ export default function ExamStartPage() {
     const nim = await window.electron.store.get('user-nim');
 
     // @ts-ignore
-    await window.electron.store.save('exam-result', [{
-      exam_id: examData.id,
-      user_username: nim,
-      total_score: tempScore,
-      expected_score: tempTotalScore,
-      // attempt: examResultData.length + 1,
-      created_at: new Date(),
-      answers: selectedAnswers
-    }]);
+    await window.electron.store.save('exam-result', [
+      {
+        exam_id: examData.id,
+        user_username: nim,
+        total_score: tempScore,
+        expected_score: tempTotalScore,
+        // attempt: examResultData.length + 1,
+        created_at: new Date(),
+        answers: selectedAnswers
+      }
+    ]);
 
     if (examData.enable_review) {
       navigate('/exam-review');
@@ -584,24 +604,12 @@ export default function ExamStartPage() {
     getExamData().then();
   }, []);
 
-  useEffect(() => {
-   if (examData?.enable_proctoring) {
-     // @ts-ignore
-     if (window.electron) {
-       // @ts-ignore
-       window.electron.onMessage((msg: string) => {
-         const jsonData = JSON.parse(msg)
+  // useEffect(() => {
+  //   if (examData?.enable_proctoring) {
+  //     // @ts-ignore
 
-         setProctoringLog((prev: any) => [...prev, {
-             description: jsonData.message,
-             time: jsonData.time,
-             image_id: jsonData.id
-           }]
-         )
-       });
-     }
-   }
-  }, []);
+  //   }
+  // }, []);
 
   return (
     <div title="Configure Exam">
@@ -994,18 +1002,18 @@ export default function ExamStartPage() {
               </div>
             </div>
 
-            {
-              examData?.enable_proctoring ? (
-                <Webcam
-                  className={'opacity-0'}
-                  ref={webcamRef}
-                  mirrored={true}
-                  screenshotQuality={1}
-                  screenshotFormat={'image/jpeg'}
-                  // className={'hidden'}
-                />
-              ) : ('')
-            }
+            {examData?.enable_proctoring ? (
+              <Webcam
+                className={'opacity-0'}
+                ref={webcamRef}
+                mirrored={true}
+                screenshotQuality={1}
+                screenshotFormat={'image/jpeg'}
+                // className={'hidden'}
+              />
+            ) : (
+              ''
+            )}
           </div>
         </div>
       </div>
