@@ -36,7 +36,6 @@ import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner.tsx';
 import { Spinner } from '@/components/custom/Spinner.tsx';
 import { v4 } from 'uuid';
-import * as process from 'node:process';
 
 export function ExamWaitingPage() {
   const [examData, setExamData] = useState<any>();
@@ -59,6 +58,7 @@ export function ExamWaitingPage() {
   const [proctoringLog, setProctoringLog] = useState<any[]>([]);
   const [showSubmitSpinner, setShowSubmitSpinner] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [apiUrl, setApiUrl] = useState('')
 
   const handleSubmitExam = async () => {
     //@ts-ignore
@@ -83,7 +83,7 @@ export function ExamWaitingPage() {
     formData.append('result_file', resultFile);
 
     try {
-      const submitData = await axios.post(`${process.env.API_URL}/exam/submit`, formData);
+      const submitData = await axios.post(`${apiUrl}/exam/submit`, formData);
       setBanyakSubmit(banyakSubmit + 1);
       setShowSubmitSpinner(false)
 
@@ -92,7 +92,6 @@ export function ExamWaitingPage() {
       setSubmitted(true)
       toast.success(submitData.data.message);
     } catch (e: any) {
-      console.log(e);
       setShowSubmitSpinner(false)
       toast.error(
         `${e.response.data.message}. You can submit from exam_result file in Documents folder.`
@@ -117,6 +116,10 @@ export function ExamWaitingPage() {
     setExamData(tempExamData.data.examData);
 
     // @ts-ignore
+    const tempApiUrl = await window.electron.store.get('API_URL');
+    setApiUrl(tempApiUrl.data);
+
+    // @ts-ignore
     const tempSubmitted = await window.electron.store.get('submitted')
 
     if (tempSubmitted.data === undefined) {
@@ -136,7 +139,6 @@ export function ExamWaitingPage() {
     if (tempProctoringLog.data) {
       setProctoringLog(tempProctoringLog.data);
     }
-    console.log(tempProctoringLog.data);
 
     setQuestionData(tempExamData.data.questionsData);
 
@@ -183,7 +185,6 @@ export function ExamWaitingPage() {
 
   useEffect(() => {
     getExamData().then();
-    console.log(submitted);
     handleGetBatteryInfo().then();
     getUserData().then();
 

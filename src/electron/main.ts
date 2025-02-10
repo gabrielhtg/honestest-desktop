@@ -11,6 +11,11 @@ import { showFile } from './utils/show-file.js';
 import { registerIpcHandler } from './utils/register-ipc-handler.js';
 
 let mainWindow: BrowserWindow;
+import * as dotenv from "dotenv";
+import Store from 'electron-store';
+
+dotenv.config();
+const store = new Store();
 
 app.on('ready', async () => {
   mainWindow = new BrowserWindow({
@@ -26,6 +31,8 @@ app.on('ready', async () => {
       isDev() ? 'logo.png' : os.platform() === 'win32' ? 'logo.png' : '../logo.png'
     )
   });
+
+  store.set('API_URL', process.env.API_URL)
 
   const runningInVM = await isVirtualMachine();
 
