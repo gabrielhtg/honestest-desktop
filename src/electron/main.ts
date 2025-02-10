@@ -14,7 +14,13 @@ let mainWindow: BrowserWindow;
 import * as dotenv from "dotenv";
 import Store from 'electron-store';
 
-dotenv.config();
+dotenv.config(
+  { path: path.join(
+      app.getAppPath(),
+      isDev() ? '.env' : os.platform() === 'win32' ? '.env' : '../.env'
+    )
+  }
+)
 const store = new Store();
 
 app.on('ready', async () => {

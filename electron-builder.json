@@ -1,6 +1,6 @@
 {
   "appId": "com.gabrielhtg.honestest",
-  "files": ["dist-electron", "dist-react"],
+  "files": ["dist-electron", "dist-react", ".env"],
   "extraResources": [
     "dist-electron/preload.cjs",
     "logo.png",
@@ -17,6 +17,6 @@
     "category": "Utility"
   },
   "win": {
-    "target": ["portable", "msi", "nsis"]
+    "target": ["portable", "msi"]
   }
 }

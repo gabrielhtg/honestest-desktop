@@ -20,14 +20,14 @@ import QuillResizeImage from 'quill-resize-image';
 import { BottomBar } from '@/components/custom/BottomBar.tsx';
 import Webcam from 'react-webcam';
 import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/components/ui/alert-dialog.tsx';
-import face_recognition_image from '@/assets/face_recognition.png';
+// import {
+//   AlertDialog,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogHeader,
+//   AlertDialogTitle
+// } from '@/components/ui/alert-dialog.tsx';
+// import face_recognition_image from '@/assets/face_recognition.png';
 Quill.register('modules/resize', QuillResizeImage);
 import { v4 } from 'uuid';
 import _ from 'lodash';
@@ -46,8 +46,8 @@ export default function ExamStartPage() {
   // const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [faceLandmarker, setFaceLandmarker] = useState<FaceLandmarker | null>(null);
   const [runningMode, setRunningMode] = useState<'IMAGE' | 'VIDEO'>('IMAGE');
-  const [cameraAlert, setCameraAlert] = useState(false);
-  const [cameraAlertDialogDesc, setCameraAlertDialogDesc] = useState('');
+  // const [cameraAlert, setCameraAlert] = useState(false);
+  // const [cameraAlertDialogDesc, setCameraAlertDialogDesc] = useState('');
   let lastScreenshotTime: number | null = null;
   let lastDetection: number = 0;
   let lastRightDetection: number = 0;
@@ -250,8 +250,8 @@ export default function ExamStartPage() {
 
   const getBanyakOrangMessage = (banyakOrang: number) => {
     if (banyakOrang > 0 && banyakOrang < 2) {
-      setCameraAlert(false);
-      setCameraAlertDialogDesc('');
+      // setCameraAlert(false);
+      // setCameraAlertDialogDesc('');
       return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
     } else if (banyakOrang > 1) {
       const imageId = v4();
@@ -260,10 +260,10 @@ export default function ExamStartPage() {
         time: new Date(),
         image_id: imageId
       });
-      setCameraAlert(true);
-      setCameraAlertDialogDesc(
-        `${banyakOrang} people were detected. 'The exam cannot continue if there are more than one people detected on camera because proctoring is active on this exam.'`
-      );
+      // setCameraAlert(true);
+      // setCameraAlertDialogDesc(
+      //   `${banyakOrang} people were detected. 'The exam cannot continue if there are more than one people detected on camera because proctoring is active on this exam.'`
+      // );
       return `Terdeteksi ada ${banyakOrang} di dalam frame.`;
     } else {
       const imageId = v4();
@@ -272,10 +272,10 @@ export default function ExamStartPage() {
         time: new Date(),
         image_id: imageId
       });
-      setCameraAlert(true);
-      setCameraAlertDialogDesc(
-        'The exam cannot continue if you are not detected on camera because proctoring is active on this exam.'
-      );
+      // setCameraAlert(true);
+      // setCameraAlertDialogDesc(
+      //   'The exam cannot continue if you are not detected on camera because proctoring is active on this exam.'
+      // );
       return 'Tidak ada orang terdeteksi.';
     }
   };
@@ -1018,24 +1018,24 @@ export default function ExamStartPage() {
 
       <BottomBar />
 
-      <AlertDialog open={cameraAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unusual Behaviour Detected</AlertDialogTitle>
-            <AlertDialogDescription>
-              <div className={'flex items-center justify-center w-full mt-5 mb-3'}>
-                <img
-                  className={'w-48'}
-                  src={face_recognition_image}
-                  loading={'eager'}
-                  alt="face_recognition"
-                />
-              </div>
-              {cameraAlertDialogDesc}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/*<AlertDialog open={cameraAlert}>*/}
+      {/*  <AlertDialogContent>*/}
+      {/*    <AlertDialogHeader>*/}
+      {/*      <AlertDialogTitle>Unusual Behaviour Detected</AlertDialogTitle>*/}
+      {/*      <AlertDialogDescription>*/}
+      {/*        <div className={'flex items-center justify-center w-full mt-5 mb-3'}>*/}
+      {/*          <img*/}
+      {/*            className={'w-48'}*/}
+      {/*            src={face_recognition_image}*/}
+      {/*            loading={'eager'}*/}
+      {/*            alt="face_recognition"*/}
+      {/*          />*/}
+      {/*        </div>*/}
+      {/*        {cameraAlertDialogDesc}*/}
+      {/*      </AlertDialogDescription>*/}
+      {/*    </AlertDialogHeader>*/}
+      {/*  </AlertDialogContent>*/}
+      {/*</AlertDialog>*/}
     </div>
   );
 }
