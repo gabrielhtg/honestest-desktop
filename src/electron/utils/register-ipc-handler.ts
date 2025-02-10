@@ -259,4 +259,9 @@ export function registerIpcHandler(mainWindow: any) {
       data: app.getAppPath()
     };
   });
+
+  ipcMain.handle('delete_exam_result_file', async () => {
+    const documentsPath = path.join(app.getPath('documents'), 'honestest', 'exam_results');
+    await rm(documentsPath, { recursive: true, force: true });
+  })
 }

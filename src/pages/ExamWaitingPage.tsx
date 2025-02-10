@@ -90,6 +90,10 @@ export function ExamWaitingPage() {
       // @ts-ignore
       window.electron.store.save('submitted', true)
       setSubmitted(true)
+
+      // @ts-ignore
+      window.electron.delete_exam_result_file()
+
       toast.success(submitData.data.message);
     } catch (e: any) {
       setShowSubmitSpinner(false)
