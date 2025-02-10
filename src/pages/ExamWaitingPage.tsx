@@ -115,11 +115,15 @@ export function ExamWaitingPage() {
     // @ts-ignore
     const tempExamData = await window.electron.store.get('exam-data');
     setExamData(tempExamData.data.examData);
-    console.log(tempExamData);
 
     // @ts-ignore
     const tempSubmitted = await window.electron.store.get('submitted')
-    setSubmitted(tempSubmitted.data)
+
+    if (tempSubmitted.data === undefined) {
+      setSubmitted(false)
+    } else {
+      setSubmitted(tempSubmitted.data)
+    }
 
     // @ts-ignore
     const tempResultData = await window.electron.store.get('exam-result');
@@ -159,6 +163,8 @@ export function ExamWaitingPage() {
     // @ts-ignore
     await window.electron.store.delete('answers');
     // @ts-ignore
+    await window.electron.store.delete('submitted');
+    // @ts-ignore
     await window.electron.store.delete('exam-data');
     // @ts-ignore
     await window.electron.store.delete('exam-proctoring_log');
@@ -177,6 +183,7 @@ export function ExamWaitingPage() {
 
   useEffect(() => {
     getExamData().then();
+    console.log(submitted);
     handleGetBatteryInfo().then();
     getUserData().then();
 

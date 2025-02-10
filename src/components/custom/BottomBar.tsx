@@ -54,6 +54,10 @@ export function BottomBar() {
     await window.electron.store.delete('answers');
     // @ts-ignore
     await window.electron.store.delete('exam-data');
+    // @ts-ignore
+    await window.electron.store.delete('submitted');
+    // @ts-ignore
+    await window.electron.store.delete('exam-proctoring_log');
     navigate('/main');
   };
 
