@@ -26,4 +26,4 @@ dist-electron
 
 temp_exam_result
 /src/lib/env.ts.bak
-!/.env
+.env
