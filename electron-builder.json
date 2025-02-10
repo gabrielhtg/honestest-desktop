@@ -17,6 +17,6 @@
     "category": "Utility"
   },
   "win": {
-    "target": ["portable", "msi", "nsis"]
+    "target": ["portable", "msi"]
   }
 }
