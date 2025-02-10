@@ -1,4 +1,4 @@
-import { app, ipcMain, shell } from 'electron';
+import { app, ipcMain } from 'electron';
 import path from 'node:path';
 import * as fs from 'node:fs';
 
