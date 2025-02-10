@@ -36,6 +36,7 @@ import { toast } from 'sonner';
 import { apiUrl } from '@/lib/env.ts';
 import { Toaster } from '@/components/ui/sonner.tsx';
 import { Spinner } from '@/components/custom/Spinner.tsx';
+import { v4 } from 'uuid';
 
 export function ExamWaitingPage() {
   const [examData, setExamData] = useState<any>();
@@ -66,7 +67,8 @@ export function ExamWaitingPage() {
         exam: examData,
         answer: examResultData[0].answers,
         questions: questionData,
-        proctoringLog: proctoringLog
+        proctoringLog: proctoringLog,
+        submit_id: v4(),
       })
     );
 
