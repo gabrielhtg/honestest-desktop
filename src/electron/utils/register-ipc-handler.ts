@@ -120,7 +120,7 @@ export function registerIpcHandler(mainWindow: any) {
 
       try {
         await execPromise(
-          `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -p105a5c33-cc82-41a3-a6b0-09fa535fdc3e -mhe`
+          `"${archiverDirectory}" a "${zipFilePath}" "${path.join(folderPath, '*')}" -p${process.env.ENCRYPT_EXAM_FILE_PASSWORD} -mhe`
         );
 
         resultFile = fs.readFileSync(zipFilePath.replaceAll('"', ''));

@@ -25,3 +25,4 @@ dist-electron
 *.sw?
 
 temp_exam_result
+/src/lib/env.ts
