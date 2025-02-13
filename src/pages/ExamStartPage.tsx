@@ -626,7 +626,7 @@ export default function ExamStartPage() {
               {selectedQuestion ? (
                 <div className={'flex gap-3 rounded-lg p-5 pb-0 mr-5'}>
                   <div>{selectedQuestion?.number + 1}.</div>
-                  <div className={'w-full h-auto'}>
+                  <div className={'w-full h-auto select-none'}>
                     {parse(selectedQuestion?.question.content)}
                     {selectedQuestion?.question.type === 'essay' ? (
                       <>

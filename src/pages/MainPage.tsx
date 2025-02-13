@@ -31,6 +31,7 @@ export function MainPage() {
   const [openExitDialog, setOpenExitDialog] = useState<boolean>(false);
   const [configPassword, setConfigPassword] = useState<string>('');
   const [passwordErrMessage, setPasswordErrMessage] = useState('');
+  const [previousSessionId, setPreviousSessionId] = useState('');
 
   // const [appPath, setAppPath] = useState('');
 
@@ -41,6 +42,8 @@ export function MainPage() {
     const tempName = await window.electron.store.get('user-name');
     // @ts-ignore
     const tempDeviceID = await window.electron.store.get('device-id');
+    // @ts-ignore
+    const tempPreviousSessionId = await window.electron.store.get('previous-session-id');
 
     // @ts-ignore
     // const temp = await window.electron.get_application_path();
@@ -50,6 +53,7 @@ export function MainPage() {
     setNim(tempNim.data);
     setName(tempName.data);
     setDeviceId(tempDeviceID.data);
+    setPreviousSessionId(tempPreviousSessionId.data);
 
     setOldNim(tempNim.data);
     setOldName(tempName.data);
@@ -76,6 +80,15 @@ export function MainPage() {
     );
 
     if (examData.data) {
+      if (previousSessionId === examData.data.session_id) {
+        toast.error('This config can no longer be used. Request a new config for the next attempt.')
+        return
+      } else {
+        setPreviousSessionId(examData.data.session_id)
+        // @ts-ignore
+        await window.electron.store.save('previous-session-id', examData.data.session_id);
+      }
+
       const allowedUser: any = examData.data.allowedUserData;
 
       const exists = allowedUser.some(

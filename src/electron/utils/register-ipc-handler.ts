@@ -87,7 +87,13 @@ export function registerIpcHandler(mainWindow: any) {
     const jsonData = JSON.parse(data);
     let archiverDirectory: string;
     const folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath, { recursive: true });
+    }
     const documentsPath = path.join(app.getPath('documents'), 'honestest', 'exam_results');
+    if (!fs.existsSync(documentsPath)) {
+      fs.mkdirSync(documentsPath, { recursive: true });
+    }
     let zipFilePath: string;
     let resultFile: any;
 
@@ -163,43 +169,48 @@ export function registerIpcHandler(mainWindow: any) {
     }
 
     const killApps = () => {
-      // kill linux app
-      killLinuxApp('telegram');
-      killLinuxApp('Discord');
-      killLinuxApp('firefox-bin');
-      killLinuxApp('chrome');
-      killLinuxApp('obs');
-      killLinuxApp('zoom');
-
-      // kill windows app
-      killWindowsApp('Telegram.exe');
-      killWindowsApp('Discord.exe');
-      killWindowsApp('chrome.exe');
-      killWindowsApp('msedge.exe');
-      killWindowsApp('WhatsApp.exe');
-      killWindowsApp('TeamViewer_Service.exe');
-      killWindowsApp('flameshot.exe');
-      killWindowsApp('kdeconnect-indicator.exe');
-      killWindowsApp('kdeconnectd.exe');
-      killWindowsApp('brave.exe');
-      killWindowsApp('Zoom.exe');
-      killWindowsApp('Notepad.exe');
-      killWindowsApp('AvastBrowser.exe');
-      killWindowsApp('firefox.exe');
-      killWindowsApp('opera.exe');
-      killWindowsApp('opera_autoupdate.exe');
-      killWindowsApp('obs64.exe');
-      killWindowsApp('Spotify.exe');
-      killWindowsApp('Lightshot.exe');
+      if (os.platform() === 'win32') {
+        // kill windows app
+        killWindowsApp('Telegram.exe');
+        killWindowsApp('Discord.exe');
+        killWindowsApp('chrome.exe');
+        killWindowsApp('msedge.exe');
+        killWindowsApp('WhatsApp.exe');
+        killWindowsApp('TeamViewer_Service.exe');
+        killWindowsApp('flameshot.exe');
+        killWindowsApp('kdeconnect-indicator.exe');
+        killWindowsApp('kdeconnectd.exe');
+        killWindowsApp('brave.exe');
+        killWindowsApp('Zoom.exe');
+        killWindowsApp('Notepad.exe');
+        killWindowsApp('AvastBrowser.exe');
+        killWindowsApp('firefox.exe');
+        killWindowsApp('opera.exe');
+        killWindowsApp('opera_autoupdate.exe');
+        killWindowsApp('obs64.exe');
+        killWindowsApp('Spotify.exe');
+        killWindowsApp('Lightshot.exe');
+        killWindowsApp('pwahelper.exe');
+      } else {
+        // kill linux app
+        killLinuxApp('telegram');
+        killLinuxApp('Discord');
+        killLinuxApp('firefox-bin');
+        killLinuxApp('chrome');
+        killLinuxApp('obs');
+        killLinuxApp('zoom');
+      }
     };
 
-    killApps();
+    if (!isDev()) {
+      killApps();
 
-    const intervalId = setInterval(killApps, 30 * 1000);
+      const intervalId = setInterval(killApps, 30 * 1000);
 
-    mainWindow.on('close', () => {
-      clearInterval(intervalId); // Hentikan interval saat jendela ditutup
-    });
+      mainWindow.on('close', () => {
+        clearInterval(intervalId); // Hentikan interval saat jendela ditutup
+      });
+    }
 
     // if (!isDev()) {
       mainWindow.setAlwaysOnTop(true, 'screen-saver');
