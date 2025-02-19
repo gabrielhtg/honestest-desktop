@@ -298,7 +298,7 @@ export default function ExamStartPage() {
       // mengembalikan message banyak orang terdeteksi.
       // setBanyakOrang(getBanyakOrangMessage(results.faceLandmarks.length));
 
-      getBanyakOrangMessage(results.faceLandmarks.length)
+      getBanyakOrangMessage(results.faceLandmarks.length);
 
       if (results.faceLandmarks) {
         // results.faceLandmarks.forEach((landmarks: any) => {
@@ -581,15 +581,17 @@ export default function ExamStartPage() {
     const nim = await window.electron.store.get('user-nim');
 
     //@ts-ignore
-    await window.electron.store.save('exam-result', [{
-      exam_id: examData.id,
-      user_username: nim,
-      total_score: tempScore,
-      expected_score: tempTotalScore,
-      // attempt: examResultData.length + 1,
-      created_at: new Date(),
-      answers: selectedAnswers
-    }]);
+    await window.electron.store.save('exam-result', [
+      {
+        exam_id: examData.id,
+        user_username: nim,
+        total_score: tempScore,
+        expected_score: tempTotalScore,
+        // attempt: examResultData.length + 1,
+        created_at: new Date(),
+        answers: selectedAnswers
+      }
+    ]);
 
     if (examData.enable_review) {
       navigate('/exam-review');
@@ -1006,6 +1008,12 @@ export default function ExamStartPage() {
                 ref={webcamRef}
                 mirrored={true}
                 screenshotQuality={1}
+                videoConstraints={{
+                  frameRate: {
+                    ideal: 15,
+                    max: 25
+                  }
+                }}
                 screenshotFormat={'image/jpeg'}
                 // className={'hidden'}
               />

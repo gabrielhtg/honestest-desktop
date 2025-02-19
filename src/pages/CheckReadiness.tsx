@@ -278,6 +278,12 @@ export default function CheckReadiness() {
           ref={webcamRef}
           audio={false}
           mirrored={true}
+          videoConstraints={{
+            frameRate: {
+              ideal: 15,
+              max: 25
+            }
+          }}
           screenshotFormat="image/jpeg"
           className={'absolute top-0 left-0 -z-50'}
         />
