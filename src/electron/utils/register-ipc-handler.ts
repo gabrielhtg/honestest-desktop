@@ -136,13 +136,13 @@ export function registerIpcHandler(mainWindow: any) {
         return {
           message: 'success',
           data: resultFile,
-          filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`,
+          filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`
         };
       } catch (e: any) {
         console.log(e);
         return {
           message: 'failed',
-          filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`,
+          filename: `${jsonData.exam.course.title}_${jsonData.exam.title}_result_${new Date().getTime()}.ta12r`
         };
       }
     } catch (error: any) {
@@ -191,6 +191,7 @@ export function registerIpcHandler(mainWindow: any) {
         killWindowsApp('Spotify.exe');
         killWindowsApp('Lightshot.exe');
         killWindowsApp('pwahelper.exe');
+        killWindowsApp('CopilotNative.exe');
       } else {
         // kill linux app
         killLinuxApp('telegram');
@@ -213,39 +214,42 @@ export function registerIpcHandler(mainWindow: any) {
     }
 
     // if (!isDev()) {
-      mainWindow.setAlwaysOnTop(true, 'screen-saver');
-      mainWindow.on('blur', async  () => {
-        const uuid = v4()
-        mainWindow.webContents.send('window-change', JSON.stringify({
+    mainWindow.setAlwaysOnTop(true, 'screen-saver');
+    mainWindow.on('blur', async () => {
+      const uuid = v4();
+      mainWindow.webContents.send(
+        'window-change',
+        JSON.stringify({
           message: 'The examinee was detected changing window.',
-          id : uuid,
+          id: uuid,
           time: new Date()
-        }));
+        })
+      );
 
-        await desktopCapturer
-          .getSources({
-            types: ['screen'],
-            thumbnailSize: {
-              width: 1920,
-              height: 1080
-            }
-          })
-          .then((sources: any) => {
-            const image: any = sources[0].thumbnail.toDataURL();
-            const outputPath = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
+      await desktopCapturer
+        .getSources({
+          types: ['screen'],
+          thumbnailSize: {
+            width: 1920,
+            height: 1080
+          }
+        })
+        .then((sources: any) => {
+          const image: any = sources[0].thumbnail.toDataURL();
+          const outputPath = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
 
-            fs.writeFileSync(
-              path.join(outputPath, `s_${uuid}.png`),
-              image.replace(/^data:image\/png;base64,/, ''),
-              'base64'
-            );
-          })
-        mainWindow.focus();
-      });
-      mainWindow.on('close', (event: any) => {
-        event.preventDefault(); // Mencegah jendela tertutup
-        console.log('Alt+F4 atau close dicegah!');
-      });
+          fs.writeFileSync(
+            path.join(outputPath, `s_${uuid}.png`),
+            image.replace(/^data:image\/png;base64,/, ''),
+            'base64'
+          );
+        });
+      mainWindow.focus();
+    });
+    mainWindow.on('close', (event: any) => {
+      event.preventDefault(); // Mencegah jendela tertutup
+      console.log('Alt+F4 atau close dicegah!');
+    });
     // }
 
     // matikan ini jika sedang development
@@ -274,5 +278,5 @@ export function registerIpcHandler(mainWindow: any) {
   ipcMain.handle('delete_exam_result_file', async () => {
     const documentsPath = path.join(app.getPath('documents'), 'honestest', 'exam_results');
     await rm(documentsPath, { recursive: true, force: true });
-  })
+  });
 }

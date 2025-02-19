@@ -11,17 +11,16 @@ import { showFile } from './utils/show-file.js';
 import { registerIpcHandler } from './utils/register-ipc-handler.js';
 
 let mainWindow: BrowserWindow;
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
 import Store from 'electron-store';
 import { rm } from 'node:fs/promises';
 
-dotenv.config(
-  { path: path.join(
-      app.getAppPath(),
-      isDev() ? '.env' : os.platform() === 'win32' ? '.env' : '../.env'
-    )
-  }
-)
+dotenv.config({
+  path: path.join(
+    app.getAppPath(),
+    isDev() ? '.env' : os.platform() === 'win32' ? '.env' : '../.env'
+  )
+});
 const store = new Store();
 
 app.on('ready', async () => {
@@ -39,13 +38,12 @@ app.on('ready', async () => {
     )
   });
 
-  store.set('API_URL', process.env.API_URL)
+  store.set('API_URL', process.env.API_URL);
 
   const runningInVM = await isVirtualMachine();
 
   if (runningInVM) {
-    console.log('Virtual env detected');
-    mainWindow.loadURL('https://id.wikipedia.org/wiki/HTTP_404');
+    await mainWindow.loadURL('https://id.wikipedia.org/wiki/HTTP_404');
   }
 
   if (isDev()) {

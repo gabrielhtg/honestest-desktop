@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button.tsx';
-import { ArrowLeft, ArrowRight, Copy, LogOut } from 'lucide-react';
+import { ArrowLeft, ArrowRight, LogOut } from 'lucide-react';
 import logo from '../assets/app-logo.png';
 import { Input } from '@/components/ui/input.tsx';
 import { Label } from '@/components/ui/label';
 import { v4 } from 'uuid';
-import { toast } from 'sonner';
+// import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner.tsx';
 import {
   Dialog,
@@ -165,20 +165,20 @@ export function WelcomePage() {
 
             <div className={'flex gap-3'}>
               <div className={'p-3 border font-mono rounded-lg'}>{deviceId}</div>
-              <Button
-                variant={'secondary'}
-                className={'h-full'}
-                onClick={() => {
-                  toast.success('Device ID Copied', {
-                    action: {
-                      label: 'OK',
-                      onClick: () => {}
-                    }
-                  });
-                  navigator.clipboard.writeText(deviceId).then();
-                }}>
-                <Copy />
-              </Button>
+              {/*<Button*/}
+              {/*  variant={'secondary'}*/}
+              {/*  className={'h-full'}*/}
+              {/*  onClick={() => {*/}
+              {/*    toast.success('Device ID Copied', {*/}
+              {/*      action: {*/}
+              {/*        label: 'OK',*/}
+              {/*        onClick: () => {}*/}
+              {/*      }*/}
+              {/*    });*/}
+              {/*    navigator.clipboard.writeText(deviceId).then();*/}
+              {/*  }}>*/}
+              {/*  <Copy />*/}
+              {/*</Button>*/}
             </div>
 
             <div className={'flex gap-3 mt-5'}>
