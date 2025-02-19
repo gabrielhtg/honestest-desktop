@@ -6,8 +6,7 @@
     "logo.png",
     "7z-linux",
     "7z-win",
-    "temp_exam_result",
-    ".env"
+    "temp_exam_result"
   ],
   "icon": "./logo.png",
   "mac": {
