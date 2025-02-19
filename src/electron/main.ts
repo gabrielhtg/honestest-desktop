@@ -13,6 +13,7 @@ import { registerIpcHandler } from './utils/register-ipc-handler.js';
 let mainWindow: BrowserWindow;
 import * as dotenv from "dotenv";
 import Store from 'electron-store';
+import { rm } from 'node:fs/promises';
 
 dotenv.config(
   { path: path.join(
@@ -66,7 +67,9 @@ app.on('ready', async () => {
   registerIpcHandler(mainWindow);
 });
 
-ipcMain.on('app-exit', () => {
+ipcMain.on('app-exit', async () => {
+  const folderPath: string = path.join(app.getPath('documents'), 'honestest', 'temp_exam_result');
+  await rm(folderPath, { recursive: true, force: true });
   app.quit();
 });
 
