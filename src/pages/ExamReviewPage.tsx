@@ -118,7 +118,7 @@ export default function ExamReviewPage() {
               <div
                 key={index}
                 id={`question${index}`}
-                className={'flex gap-3 rounded-lg p-5 pb-0 mr-5'}>
+                className={'flex gap-3 rounded-lg p-5 pb-0 mr-5 select-none'}>
                 <div>{index + 1}.</div>
                 <div className={'w-full h-auto'}>
                   {parse(question.content)}
@@ -239,8 +239,7 @@ export default function ExamReviewPage() {
               <Button
                 onClick={() => {
                   handleSubmitExam().then();
-                }}
-              >
+                }}>
                 Done Review
               </Button>
             </div>
